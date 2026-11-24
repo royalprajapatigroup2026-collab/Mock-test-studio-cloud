@@ -13,6 +13,7 @@ SAFETY FIXES
 - Batch creation uses Netlify Blobs setJSON(..., { onlyIfNew: true }) so duplicate batch IDs cannot overwrite an existing batch during concurrent requests.
 - API rejects request bodies larger than 4 MB.
 - _headers uses Netlify's supported path/header syntax.
+- Full Backup now includes the cloud sync batch ledger so restored devices retain their processed-batch history.
 - The old third-party ChatGPT GitHub Action workflow has been removed from this branch. It was not required for the publisher and ran an unpinned external action on pull requests.
 
 STILL REQUIRED BEFORE DEPLOYMENT
