@@ -1,0 +1,25 @@
+NETLIFY PUBLISHER TEST — AUDIT NOTES
+======================================
+
+This branch contains the first safety fixes for the separate test deployment.
+
+PUBLIC DATA NOTICE
+- GET /api/questions is intentionally a public, read-only feed because the PWA sync client does not send an administrator token.
+- Anyone who knows the test site's URL can read batches published to this feed.
+- Do not publish confidential, paid, unreleased, or otherwise restricted question content.
+- POST publication requires the PUBLISHER_TOKEN stored in Netlify Environment Variables.
+
+SAFETY FIXES
+- Batch creation uses Netlify Blobs setJSON(..., { onlyIfNew: true }) so duplicate batch IDs cannot overwrite an existing batch during concurrent requests.
+- API rejects request bodies larger than 4 MB.
+- _headers uses Netlify's supported path/header syntax.
+- The old third-party ChatGPT GitHub Action workflow has been removed from this branch. It was not required for the publisher and ran an unpinned external action on pull requests.
+
+STILL REQUIRED BEFORE DEPLOYMENT
+- Test API behavior against an actual Netlify test site.
+- Verify publisher authorization, invalid JSON, oversized requests, duplicate batch IDs, and cloud feed behavior.
+- Verify PWA merge/new-subject handling, exact duplicates, conflicting answers, repeated sync, and full backup/restore.
+- Review and test the existing PWA sync code on Android Chrome before using real question banks.
+- Keep main and test branches unchanged until all tests pass.
+
+NO LIVE SITE WAS DEPLOYED OR MODIFIED BY THIS AUDIT FIX BRANCH.
