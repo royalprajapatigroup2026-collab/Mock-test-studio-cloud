@@ -1,30 +1,9 @@
-name: ChatGPT Assistant
-
-on:
-  issue_comment:
-    types: [created]
-  pull_request:
-    types: [opened, synchronize]
-
-jobs:
-  chatgpt:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run ChatGPT API
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
-        run: |
-          curl https://api.openai.com/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -d '{
-              "model": "gpt-4o-mini",
-              "messages": [{"role": "user", "content": "Hello from GitHub Actions!"}]
-            }'
+    - uses: unsafecoerce/chatgpt-action@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CHATGPT_ACCESS_TOKEN: ${{ secrets.CHATGPT_ACCESS_TOKEN }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      with:
+        debug: false
+        action: review
+        review_comment_lgtm: true
