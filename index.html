@@ -16,7 +16,8 @@
 <meta name="theme-color" content="#f0f4ff" id="metaThemeColor">
 
 <meta name="description" content="Universal Interactive Mock Test Studio — Offline Practice & Exam Simulator">
-<title>Mock Test Studio — Interactive Practice & Exam Engine</title>
+<title>Mock Test Studio — Interactive Practice & Exam Engine | FUNC-005 Approval Candidate</title>
+<meta name="mts-candidate-version" content="FUNC-004 approval candidate based on FUNC-003 — preserve complete app and 600-question bank; refine Home interruption card, Test Mode controls, spacing and submit dialog">
 <style>
 :root{
  --bg:#f0f4ff;
@@ -996,8 +997,7 @@ code.inline-code{
  background:var(--surface-alt);
  color:var(--muted);
  font-size:.73rem;
- font-weight:800;
-}
+ font-weight:800;}
 .pal-filter.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 .pal-table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:12px}
@@ -1647,12 +1647,10 @@ body.primary-active .exit-primary{
  width:44px!important;height:44px!important;z-index:100001!important;
  touch-action:none!important;
 }
-body.primary-active .q-pause-btn{display:inline-flex!important}
-.q-pause-btn{cursor:pointer;align-items:center;justify-content:center}
 
 /* Instant Study Mode: compact in-question explanation overlay */
 .q-card{position:relative;}
-.solution-tools{position:absolute;top:10px;right:12px;z-index:8;display:flex;gap:10px;align-items:center}
+.solution-tools{position:absolute;top:52px;right:12px;z-index:8;display:flex;gap:10px;align-items:center}
 .question-solved-badge{min-height:32px;padding:0 11px;border:1px solid #86d7a8;border-radius:9px;background:#e8f8ee;color:#167344;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:.72rem;font-weight:900;font-variant-numeric:tabular-nums;box-shadow:0 2px 8px rgba(22,115,68,.09)}
 .solution-tool-btn{width:34px;height:32px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--primary);font-size:1rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,23,42,.08)}
 .solution-tool-btn:disabled{opacity:.35;cursor:not--allowed}
@@ -1998,8 +1996,7 @@ select option{background:var(--surface);color:var(--text)}
  display:none;position:relative!important;inset:auto!important;width:auto!important;max-width:none!important;
  margin:3px 6px 8px 53px!important;padding:12px!important;
  background-color:var(--surface)!important;color:var(--text)!important;
- border:1px solid var(--border)!important;border-radius:13px!important;
- box-shadow:0 8px 20px rgba(0,0,0,.12)!important;
+ border:1px solid var(--border)!important;border-radius:13px!important; box-shadow:0 8px 20px rgba(0,0,0,.12)!important;
 }
 .more-menu-row .ctrl-popover.open{display:block!important}
 .more-menu-row .custom-timer-box{background-color:var(--surface-alt)!important}
@@ -2020,7 +2017,6 @@ select option{background:var(--surface);color:var(--text)}
 @media(max-width:520px){
  #submitModal .submit-modal-actions{gap:8px}
  #submitModal .exit-test-modal-btn{order:0;flex:1 0 100%;margin-right:0}
- #submitModal #cancelSubmitBtn{order:1;flex:1}
  #submitModal #confirmSubmitBtn{order:2;flex:1}
 }
 #submitModal .modal-card,
@@ -2999,8 +2995,7 @@ body.qb-manager-open{overflow-x:hidden}
 .bookmark-practice-count-indicator{
  display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;
  gap:9px!important;min-width:44px!important;color:var(--text)!important;font-weight:900!important;
- font-size:1.15rem!important;line-height:1!important;
-}
+ font-size:1.15rem!important;line-height:1!important;}
 .bookmark-practice-count-indicator svg{
  display:block!important;width:25px!important;height:25px!important;flex:0 0 25px!important;
  fill:none!important;stroke:currentColor!important;stroke-width:2.1!important;
@@ -3930,6 +3925,12 @@ body.qb-manager-open{overflow-x:hidden}
 .home-study-trend>.home-study-muted{margin-top:7px}
 .question-progress-strip{margin:0 0 14px;padding:0 0 10px;border-bottom:1px solid var(--border)}
 .question-progress-label{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;color:var(--muted);font-size:.67rem;font-weight:800;font-variant-numeric:tabular-nums}
+.question-progress-label-with-bookmark{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;align-items:center!important;gap:10px!important}
+.question-progress-label-with-bookmark .question-solved-badge{justify-self:start}
+.question-progress-label-with-bookmark .question-progress-bookmark{justify-self:center;width:38px;height:36px;min-width:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
+.question-progress-label-with-bookmark .question-progress-counter{justify-self:end;text-align:right;white-space:nowrap;color:var(--muted);font-size:.67rem;font-weight:800;font-variant-numeric:tabular-nums}
+.question-progress-bookmark svg{width:19px;height:19px}
+@media(max-width:380px){.question-progress-label-with-bookmark{gap:5px!important}.question-progress-label-with-bookmark .question-solved-badge{padding:0 7px;font-size:.64rem}.question-progress-label-with-bookmark .question-progress-counter{font-size:.61rem}.question-progress-label-with-bookmark .question-progress-bookmark{width:34px;height:33px;min-width:34px}}
 .question-progress-track{height:5px;overflow:hidden;border-radius:99px;background:var(--surface-2,var(--panel-2))}
 .question-progress-track>span{display:block;height:100%;border-radius:inherit;background:var(--primary);transition:width .18s ease}
 .review-topic-chip,.bookmark-topic-chip{display:inline-flex;align-items:center;max-width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2,var(--panel-2));color:var(--muted);font-size:.65rem;font-weight:750;line-height:1.25}
@@ -3993,7 +3994,6 @@ html.study-lock #appDataSafetyCard{
 #homeExitedTestPanel .home-dashboard-actions > .home-action{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 56px!important;width:100%!important;min-width:0!important;max-width:none!important;min-height:56px!important;height:56px!important;box-sizing:border-box!important;margin:0!important}
 #homeExitedTestPanel .home-dashboard-actions > #homeContinueExitedTestBtn{background:#16803c!important;color:#fff!important;border:1px solid #11652f!important}
 #homeExitedTestPanel .home-dashboard-actions > #homeResetExitedTestBtn{background:#c62828!important;color:#fff!important;border:1px solid #b71c1c!important}
-
 .pers-duration-help{display:block;margin-top:5px;color:var(--muted);font-size:.72rem;line-height:1.35}
 
 /* ===== Layout repair: Saved Test Results + Personalized Test Builder ===== */
@@ -4117,6 +4117,324 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
 #appDataSafetyCard .app-backup-status[hidden]{display:none!important;margin:0!important;padding:0!important}
 @media(max-width:520px){#appDataSafetyCard .app-data-safety-actions{justify-content:flex-end!important}#appDataSafetyCard .app-data-safety-actions button{flex:0 0 auto!important;width:auto!important}}
 </style>
+<!-- FUNC-002 approval candidate: all original app modules and embedded question records retained; targeted changes only. -->
+
+<style id="func003-layout-refinements">
+/* FUNC-003: Test Mode layout refinements. Scoped to Test Mode / submit dialog only. */
+body.primary-active .q-meta-bar{position:relative!important;}
+body.primary-active .q-meta-bar .q-meta-right{margin-left:auto!important;}
+body.primary-active .q-meta-bar .q-timer-inline{
+ position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+ margin:0!important;z-index:2!important;white-space:nowrap!important;
+}
+body.primary-active .q-meta-bar .top-submit-btn{margin-left:auto!important;position:relative!important;z-index:3!important;}
+
+/* Solved percentage left, question count exactly centered, bookmark at right. */
+body.primary-active .question-progress-strip{margin-top:-4px!important;}
+body.primary-active .question-progress-label-with-bookmark{
+ grid-template-columns:minmax(0,1fr) auto minmax(38px,1fr)!important;
+ align-items:center!important;transform:translateY(-4px)!important;
+}
+body.primary-active .question-progress-label-with-bookmark .question-solved-badge{grid-column:1;justify-self:start!important;}
+body.primary-active .question-progress-label-with-bookmark .question-progress-counter{
+ grid-column:2;justify-self:center!important;text-align:center!important;white-space:nowrap!important;
+}
+body.primary-active .question-progress-label-with-bookmark .question-progress-bookmark{
+ grid-column:3;justify-self:end!important;
+}
+
+/* Navigation order: Previous | Clear | Mark for Review | Next. */
+body.primary-active .action-bar{
+ grid-template-columns:auto auto minmax(0,1fr) auto!important;
+ align-items:center!important;
+}
+body.primary-active .action-bar .action-center{display:contents!important;}
+body.primary-active .action-bar #prevBtn{grid-column:1;justify-self:start;}
+body.primary-active .action-bar #clearBtn{grid-column:2;justify-self:center;}
+body.primary-active .action-bar #markBtn{grid-column:3;justify-self:center;}
+body.primary-active .action-bar #nextBtn{grid-column:4;justify-self:end;}
+@media(max-width:700px){
+ body.primary-active .action-bar{grid-template-columns:auto auto minmax(0,1fr) auto!important;gap:4px!important;padding-left:7px!important;padding-right:7px!important;}
+ body.primary-active .action-bar .act-btn{padding:6px 6px!important;font-size:.68rem!important;white-space:nowrap!important;}
+}
+@media(max-width:380px){
+ body.primary-active .action-bar{gap:3px!important;padding-left:5px!important;padding-right:5px!important;}
+ body.primary-active .action-bar .act-btn{padding:6px 4px!important;font-size:.64rem!important;}
+}
+
+/* Confirmation heading emphasis; the green Final Submit button itself is unchanged. */
+#submitModal .modal-head h3{
+ display:inline-flex!important;align-items:center!important;
+ padding:8px 14px!important;border-radius:11px!important;
+ color:#1d4ed8!important;background:linear-gradient(135deg,#e0f2fe,#dbeafe)!important;
+ border:1px solid #60a5fa!important;
+ box-shadow:0 3px 10px rgba(37,99,235,.14)!important;
+}
+/* Align the three actions directly beneath Answered / Marked / Unanswered. */
+#submitModal .submit-modal-actions{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ align-items:stretch!important;justify-content:stretch!important;gap:10px!important;width:100%!important;
+}
+#submitModal .submit-modal-actions #exitTestFromSubmitBtn{
+ grid-column:1!important;order:0!important;margin:0!important;width:100%!important;min-width:0!important;
+}
+#submitModal .submit-modal-actions #confirmSubmitBtn{
+ grid-column:3!important;order:0!important;width:100%!important;min-width:0!important;
+ background:linear-gradient(135deg,#059669,#10b981)!important;color:#fff!important;
+ border-color:transparent!important;box-shadow:0 4px 12px rgba(16,185,129,.25)!important;
+}
+@media(max-width:520px){
+ #submitModal .submit-modal-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;}
+ #submitModal .submit-modal-actions .act-btn{min-width:0!important;width:100%!important;padding:8px 4px!important;font-size:.68rem!important;white-space:normal!important;line-height:1.15!important;}
+ #submitModal .submit-modal-actions #exitTestFromSubmitBtn{flex:none!important;}
+ #submitModal .submit-modal-actions #confirmSubmitBtn{flex:none!important;}
+}
+</style>
+
+
+<style id="func004-layout-refinements">
+/* FUNC-004: Home, question workspace, review control and submit dialog refinements. */
+
+/* Interrupted Test remains a compact card at the top of Home; Home tools stay visible below it. */
+#homeDashboard:not([hidden]){
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:flex-start!important;gap:0!important;
+}
+#homeExitedTestPanel{
+ width:min(100%,980px)!important;max-width:980px!important;
+ margin:12px auto 16px!important;padding:16px 18px!important;
+ border-radius:16px!important;text-align:center!important;
+}
+#homeExitedTestPanel h2{margin:0 0 10px!important;font-size:clamp(1.15rem,2.7vw,1.45rem)!important;}
+#homeExitedTestPanel .home-dashboard-actions{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ align-items:stretch!important;gap:10px!important;width:100%!important;
+}
+#homeExitedTestPanel .home-dashboard-actions .home-action{
+ min-width:0!important;min-height:48px!important;width:100%!important;
+ padding:10px 12px!important;box-sizing:border-box!important;margin:0!important;
+}
+#homeDashboardContent[hidden]{display:none!important}
+@media(max-width:560px){
+ #homeExitedTestPanel{margin:10px auto 14px!important;padding:14px 12px!important;}
+ #homeExitedTestPanel .home-dashboard-actions{grid-template-columns:1fr!important;gap:8px!important;}
+ #homeExitedTestPanel .home-dashboard-actions .home-action{min-height:44px!important;}
+}
+
+/* Give the question card more useful room while retaining comfortable text breathing space. */
+body.primary-active .q-meta-bar{margin-bottom:7px!important;padding:6px 12px!important;}
+body.primary-active .timer-track{margin:0 0 7px!important;}
+body.primary-active .question-progress-strip{margin:0 0 8px!important;padding-bottom:7px!important;}
+body.primary-active .q-card{padding:14px 16px 15px!important;}
+body.primary-active .q-stem{margin-top:0!important;margin-bottom:14px!important;line-height:1.58!important;}
+body.primary-active .action-bar{margin-top:7px!important;padding:7px 9px!important;gap:8px!important;}
+
+/* Solved percentage left, the wider question counter centered, bookmark at the right. */
+body.primary-active .question-progress-label-with-bookmark{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) max-content minmax(0,1fr)!important;
+ align-items:center!important;gap:8px!important;transform:translateY(-1px)!important;
+}
+body.primary-active .question-progress-label-with-bookmark .question-solved-badge{
+ grid-column:1!important;justify-self:start!important;min-width:0!important;
+ min-height:28px!important;padding:0 8px!important;font-size:.66rem!important;
+}
+body.primary-active .question-progress-label-with-bookmark .question-progress-counter{
+ grid-column:2!important;justify-self:center!important;text-align:center!important;
+ min-width:0!important;font-size:.72rem!important;white-space:nowrap!important;
+}
+body.primary-active .question-progress-label-with-bookmark .question-progress-bookmark{
+ grid-column:3!important;justify-self:end!important;
+ width:38px!important;height:34px!important;min-width:38px!important;
+}
+body.primary-active .question-progress-bookmark svg{width:20px!important;height:20px!important;}
+@media(max-width:380px){
+ body.primary-active .question-progress-label-with-bookmark{gap:5px!important;}
+ body.primary-active .question-progress-label-with-bookmark .question-solved-badge{padding:0 6px!important;font-size:.62rem!important;}
+ body.primary-active .question-progress-label-with-bookmark .question-progress-counter{font-size:.66rem!important;}
+ body.primary-active .question-progress-label-with-bookmark .question-progress-bookmark{width:34px!important;height:32px!important;min-width:34px!important;}
+}
+
+/* Compact navigation: Previous | Clear | icon-only Mark for Review | Next. */
+body.primary-active .action-bar{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(48px,.68fr) minmax(64px,.82fr) minmax(64px,.82fr)!important;
+ align-items:center!important;gap:8px!important;
+}
+body.primary-active .action-bar .action-center{display:contents!important;}
+body.primary-active .action-bar #prevBtn,
+body.primary-active .action-bar #clearBtn,
+body.primary-active .action-bar #markBtn,
+body.primary-active .action-bar #nextBtn{
+ grid-row:1!important;justify-self:stretch!important;width:100%!important;
+ min-width:0!important;min-height:42px!important;box-sizing:border-box!important;
+}
+body.primary-active .action-bar #prevBtn{grid-column:1!important;}
+body.primary-active .action-bar #clearBtn{grid-column:2!important;}
+body.primary-active .action-bar #markBtn{grid-column:3!important;}
+body.primary-active .action-bar #nextBtn{grid-column:4!important;}
+body.primary-active .action-bar #markBtn{
+ padding:0!important;display:inline-flex!important;align-items:center!important;
+ justify-content:center!important;gap:0!important;
+}
+body.primary-active .action-bar #markBtn svg{
+ display:block!important;width:30px!important;height:30px!important;
+ fill:none!important;stroke:currentColor!important;stroke-width:2.1!important;
+ stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+body.primary-active .action-bar #markBtn.is-marked svg{fill:rgba(124,58,237,.12)!important;}
+body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
+@media(max-width:700px){
+ body.primary-active .action-bar{grid-template-columns:minmax(0,1fr) minmax(44px,.64fr) minmax(60px,.78fr) minmax(60px,.78fr)!important;gap:6px!important;padding-left:7px!important;padding-right:7px!important;}
+ body.primary-active .action-bar .act-btn{padding:6px 6px!important;font-size:.70rem!important;border-radius:9px!important;}
+ body.primary-active .action-bar #markBtn{padding:0!important;}
+ body.primary-active .action-bar #markBtn svg{width:29px!important;height:29px!important;}
+}
+@media(max-width:380px){
+ body.primary-active .action-bar{grid-template-columns:minmax(0,1fr) minmax(42px,.62fr) minmax(56px,.76fr) minmax(56px,.76fr)!important;gap:5px!important;padding-left:5px!important;padding-right:5px!important;}
+ body.primary-active .action-bar .act-btn{padding:5px 4px!important;font-size:.65rem!important;}
+ body.primary-active .action-bar #markBtn svg{width:27px!important;height:27px!important;}
+}
+
+/* Submit dialog: plain colored heading, close X top-right, two actions only. */
+#submitModal .modal-head.submit-modal-head{
+ position:relative!important;display:flex!important;align-items:center!important;
+ justify-content:center!important;min-height:42px!important;margin:0 0 18px!important;
+ padding:0 42px!important;border:0!important;
+}
+#submitModal .modal-head.submit-modal-head h3{
+ display:block!important;margin:0!important;padding:0!important;
+ border:0!important;border-radius:0!important;background:none!important;
+ box-shadow:none!important;color:#2563eb!important;
+ font-size:clamp(1.25rem,4vw,1.65rem)!important;font-weight:950!important;
+ line-height:1.2!important;text-align:center!important;
+}
+#submitModal .modal-close-btn{
+ position:absolute!important;top:50%!important;right:0!important;transform:translateY(-50%)!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:36px!important;height:36px!important;min-width:36px!important;padding:0!important;
+ border:1px solid var(--border-strong)!important;border-radius:50%!important;
+ background:var(--surface-alt)!important;color:var(--text)!important;
+ font-size:1.55rem!important;font-weight:700!important;line-height:1!important;
+ cursor:pointer!important;
+}
+#submitModal .modal-close-btn:hover{background:var(--bad-bg)!important;color:var(--bad)!important;border-color:var(--bad-border)!important;}
+#submitModal .submit-modal-actions{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ align-items:stretch!important;justify-content:stretch!important;gap:12px!important;width:100%!important;
+}
+#submitModal .submit-modal-actions #exitTestFromSubmitBtn{
+ grid-column:1!important;order:0!important;width:100%!important;min-width:0!important;
+ min-height:48px!important;margin:0!important;padding:10px 12px!important;
+ background:linear-gradient(135deg,#b91c1c,#dc2626)!important;color:#fff!important;
+ border:1px solid #b91c1c!important;box-shadow:0 4px 12px rgba(185,28,28,.2)!important;
+}
+#submitModal .submit-modal-actions #confirmSubmitBtn{
+ grid-column:2!important;order:0!important;width:100%!important;min-width:0!important;
+ min-height:48px!important;margin:0!important;padding:10px 12px!important;
+ background:linear-gradient(135deg,#059669,#10b981)!important;color:#fff!important;
+ border:1px solid transparent!important;box-shadow:0 4px 12px rgba(16,185,129,.25)!important;
+}
+@media(max-width:520px){
+ #submitModal .modal-card{padding:18px!important;}
+ #submitModal .modal-summary{gap:6px!important;margin-bottom:14px!important;}
+ #submitModal .modal-summary div{padding:9px 4px!important;}
+ #submitModal .submit-modal-actions{gap:8px!important;}
+ #submitModal .submit-modal-actions .act-btn{font-size:.76rem!important;white-space:normal!important;line-height:1.2!important;}
+}
+</style>
+
+
+<style id="func005-submit-dialog-layout">
+/* FUNC-005: center the confirmation title, keep close control inside the card,
+   and make all three status cards span the same content width as the actions. */
+#submitModal .modal-card{
+  position:relative!important;
+  box-sizing:border-box!important;
+  padding:clamp(18px,3.2vw,30px)!important;
+}
+#submitModal .modal-head.submit-modal-head{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:clamp(64px,9vw,88px)!important;
+  margin:0 0 clamp(18px,3vw,28px)!important;
+  padding:0 54px!important;
+  box-sizing:border-box!important;
+}
+#submitModal .modal-head.submit-modal-head h3{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  background:none!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:#2563eb!important;
+  font-size:clamp(1.45rem,4.5vw,2.15rem)!important;
+  font-weight:950!important;
+  line-height:1.15!important;
+  text-align:center!important;
+}
+#submitModal .modal-close-btn{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  transform:none!important;
+  z-index:2!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  padding:0!important;
+  border:1px solid var(--border-strong)!important;
+  border-radius:50%!important;
+  background:var(--surface-alt)!important;
+  color:var(--text)!important;
+  font-size:1.65rem!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+#submitModal .modal-summary{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:clamp(8px,1.5vw,14px)!important;
+  width:100%!important;
+  margin:0 0 clamp(18px,3vw,28px)!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+#submitModal .modal-summary div{
+  min-width:0!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:clamp(12px,2vw,20px) 5px!important;
+}
+#submitModal .submit-modal-actions{
+  width:100%!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:420px){
+  #submitModal .modal-card{padding:16px!important;}
+  #submitModal .modal-head.submit-modal-head{min-height:60px!important;padding:0 46px!important;margin-bottom:14px!important;}
+  #submitModal .modal-close-btn{width:36px!important;height:36px!important;min-width:36px!important;font-size:1.45rem!important;}
+  #submitModal .modal-summary{gap:6px!important;margin-bottom:16px!important;}
+  #submitModal .modal-summary div{padding:11px 3px!important;}
+  #submitModal .modal-summary span{font-size:.62rem!important;}
+}
+</style>
+
 </head>
 <body>
 
@@ -4262,7 +4580,6 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
      <!-- Box 1: Question Number + Chapter Name + Sub-chapter Name + Bookmark Icon + Final Submit -->
      <div class="q-meta-bar">
       <div class="q-meta-left">
-       <span class="q-num-badge" id="qCounterBadge">1 out of 50 Questions</span>
        <button type="button" class="question-palette-trigger" id="questionPaletteBtn" aria-label="Open question palette" title="Question Palette">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><rect x="14" y="14" width="7" height="7" rx="1.3"/></svg>
        </button>
@@ -4271,10 +4588,6 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
       </div>
       <div class="q-meta-right">
        <span class="q-timer-inline off" id="liveTimerPill">⏱ 00:30</span>
-       <button type="button" class="q-pause-btn" id="pauseTimerBtn">⏸ Pause</button>
-       <button type="button" class="bmk-icon-btn" id="topBookmarkBtn" title="Bookmark this question" aria-label="Bookmark this question">
-        <svg id="topBookmarkSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-       </button>
        <button type="button" class="top-submit-btn" id="submitBtn">Final Submit</button>
       </div>
      </div>
@@ -4290,7 +4603,7 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
       <button type="button" class="act-btn" id="prevBtn">← Previous</button>
       <div class="action-center">
        <button type="button" class="act-btn" id="clearBtn">Clear</button>
-       <button type="button" class="act-btn review-btn" id="markBtn">★ Mark for Review</button>
+       <button type="button" class="act-btn review-btn" id="markBtn" aria-label="Mark for review" title="Mark for review" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4m0 0h13l-2.5 4L18 12H5" /></svg></button>
       </div>
       <button type="button" class="act-btn next-btn" id="nextBtn">Next →</button>
      </div>
@@ -4348,7 +4661,7 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
    <!-- Home Dashboard: questions appear only after the user starts a selected test -->
    <section class="home-dashboard" id="homeDashboard" hidden aria-label="Practice Home">
     <div class="home-exited-test-panel" id="homeExitedTestPanel" hidden>
-    <h2>Test Paused</h2>
+    <h2>Interrupted Test</h2>
     <div class="home-dashboard-actions">
      <button type="button" class="home-action primary" id="homeContinueExitedTestBtn">Continue Test</button>
      <button type="button" class="home-action secondary" id="homeRestartExitedTestBtn">Restart Test</button>
@@ -4667,8 +4980,9 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
 <!-- Submit Confirmation Modal -->
 <div class="modal-backdrop" id="submitModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
  <div class="modal-card">
-  <div class="modal-head">
+  <div class="modal-head submit-modal-head">
    <h3 id="modalTitle">Final Submit?</h3>
+   <button type="button" class="modal-close-btn" id="closeSubmitModalBtn" aria-label="Close submit confirmation" title="Close and return to test">×</button>
   </div>
   <div class="modal-summary">
    <div><strong id="mAns" style="color:var(--ok)">0</strong><span>Answered</span></div>
@@ -4677,12 +4991,10 @@ body:has(#scorecardView.active) #appDataSafetyCard{display:none!important}
   </div>
   <div class="modal-btns submit-modal-actions">
    <button type="button" class="act-btn exit-test-modal-btn" id="exitTestFromSubmitBtn" aria-label="Double tap within half a second to exit test">Exit from Test</button>
-   <button type="button" class="act-btn" id="cancelSubmitBtn">Cancel</button>
    <button type="button" class="act-btn submit-btn" id="confirmSubmitBtn">Final Submit</button>
   </div>
  </div>
 </div>
-
 <!-- Bookmarked Questions Modal -->
 <div class="modal-backdrop" id="bookmarkModal" role="dialog" aria-modal="true" aria-labelledby="bmkModalTitle">
  <div class="modal-card wide">
@@ -4931,6 +5243,7 @@ const state = {
  bookmarks: {},
  customSession: null,
  exitedTestKey: null,
+ lastSubmittedAttemptId: null,
  chapters: {}
 };
 
@@ -5011,6 +5324,7 @@ function saveState(){
    bookmarks: state.bookmarks,
    customSession: state.customSession,
    exitedTestKey: state.exitedTestKey,
+   lastSubmittedAttemptId: state.lastSubmittedAttemptId,
    chapters: state.chapters
   }));
   if(typeof homeStudySnapshotCache!=="undefined")homeStudySnapshotCache.at=0;
@@ -5054,6 +5368,7 @@ function loadState(){
    state.customSession = {...saved.customSession,questionIds:saved.customSession.questionIds.map(migrateSubjectScopedId)};
   }
   if(typeof saved.exitedTestKey==="string" && saved.exitedTestKey) state.exitedTestKey=migrateSubjectScopedId(saved.exitedTestKey);
+  if(typeof saved.lastSubmittedAttemptId==="string" && saved.lastSubmittedAttemptId) state.lastSubmittedAttemptId=saved.lastSubmittedAttemptId;
   if(saved.chapters && typeof saved.chapters === "object"){
    const migrated={};
    Object.entries(saved.chapters).forEach(([key,value])=>{migrated[migrateSubjectScopedId(key)]=value;});
@@ -5164,7 +5479,6 @@ function syncTimerUI(nowMs){
  const sess = getActiveSession();
  const cs = getSessionState(sess);
  const pill = $("liveTimerPill");
- const pauseBtn = $("pauseTimerBtn");
  const track = $("timerTrack");
  const fill = $("timerFill");
 
@@ -5172,18 +5486,11 @@ function syncTimerUI(nowMs){
 
  if(!cs.testStarted || cs.submitted || cs.viewingScorecard){
   pill.className = "q-timer-inline off";
-  if(pauseBtn) pauseBtn.style.display = "none";
   track.classList.remove("visible");
   lastDisplayedSec = -1;
   return;
  }
 
- if(pauseBtn){
-  pauseBtn.style.display = displayMode === "test" ? "inline-flex" : "none";
-  pauseBtn.textContent = timerPaused ? "▶ Resume" : "⏸ Pause";
-  pauseBtn.setAttribute("aria-pressed", String(timerPaused));
-  pauseBtn.title = timerPaused ? "Resume test timer" : "Pause test timer";
- }
  if(getActiveTimerMode(sess) === "off"){
   pill.className = "q-timer-inline off";
   track.classList.remove("visible");
@@ -5400,7 +5707,6 @@ const APP_BACKUP_VERSION=1;
 const APP_BACKUP_KEYS=[
  "mock_studio_600_v6",
  "mockStudio.questionBanks.v1",
- "mockStudio.cloudSyncBatches.v1",
  "mockStudio.questionBankDeletions.v1",
  "mockStudio.questionBankLocks.v1",
  "mockTestStudio.resultHistory.v1",
@@ -5688,8 +5994,7 @@ function makeAttemptRecord(sess, cs, st){
   chapterTitle: sess.title || "Custom Test",
   isCustom: !!sess.isCustom,
   customQuestionIds: sess.isCustom&&state.customSession?state.customSession.questionIds.slice():undefined,
-  customDurationMinutes: sess.isCustom&&state.customSession?state.customSession.durationMinutes:undefined,
-  markingScheme: sess.isCustom&&state.customSession?state.customSession.markingScheme:"upsc",
+  customDurationMinutes: sess.isCustom&&state.customSession?state.customSession.durationMinutes:undefined,  markingScheme: sess.isCustom&&state.customSession?state.customSession.markingScheme:"upsc",
   total: st.total,
   answered: st.answered,
   correct: st.correct,
@@ -5710,6 +6015,7 @@ function formatDuration(sec){
  return h ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
 }
 let activeHistoryAttemptId = null;
+let savedReviewReattemptMode = false;
 
 let homeStudySnapshotCache={at:0,html:"",weakHTML:"",trendHTML:""};
 function renderHomeStudySnapshot(force){
@@ -5893,21 +6199,21 @@ function renderSavedAttemptReview(item){
  const retakeKey=String(item.id)+"::"+String(d.questionId||idx);
  const retakeSelected=Object.prototype.hasOwnProperty.call(savedReviewRetakeAnswers,retakeKey)?savedReviewRetakeAnswers[retakeKey]:"";
  // Reattempt ON starts blank; original saved answer appears only in read-only OFF mode.
- const effectiveSelected=reviewReattemptMode?retakeSelected:(d.selected||"");
- const revealSavedAnswer=!reviewReattemptMode || !!effectiveSelected;
+ const effectiveSelected=savedReviewReattemptMode?retakeSelected:(d.selected||"");
+ const revealSavedAnswer=!savedReviewReattemptMode || !!effectiveSelected;
  const correctKeys=Array.isArray(d.correctAnswer)?d.correctAnswer.map(String):[String(d.correctAnswer||"")];
  const opts=Object.keys(d.options||{}).filter(k=>String(d.options[k]||"").trim()).map(letter=>{
   const isSelected=effectiveSelected===letter,isCorrect=correctKeys.includes(letter);
-  let cls="opt-card history-static-option"+(reviewReattemptMode?" retake-choice":"");
+  let cls="opt-card history-static-option"+(savedReviewReattemptMode?" retake-choice":"");
   let tag="";
   if(revealSavedAnswer && isCorrect){cls+=" correct";tag='<span class="opt-tag">Correct Answer</span>';}
   if(revealSavedAnswer && isSelected&&!isCorrect){cls+=" wrong";tag='<span class="opt-tag">Your Choice</span>';}
   if(revealSavedAnswer && isSelected&&isCorrect)tag='<span class="opt-tag">Your Correct Answer</span>';
-  const tagName=reviewReattemptMode?'button':'div';
-  const buttonType=reviewReattemptMode?'type="button"':"";
-  return `<${tagName} ${buttonType} class="${cls}" ${reviewReattemptMode?`data-saved-retake-answer="${esc(letter)}"`:""}><span class="opt-letter">${esc(letter)}</span><span class="opt-text">${formatInline((d.options||{})[letter]||"")}</span>${tag}</${tagName}>`;
+  const tagName=savedReviewReattemptMode?'button':'div';
+  const buttonType=savedReviewReattemptMode?'type="button"':"";
+  return `<${tagName} ${buttonType} class="${cls}" ${savedReviewReattemptMode?`data-saved-retake-answer="${esc(letter)}"`:""}><span class="opt-letter">${esc(letter)}</span><span class="opt-text">${formatInline((d.options||{})[letter]||"")}</span>${tag}</${tagName}>`;
  }).join("");
- const effectiveStatus=effectiveSelected?(correctKeys.includes(effectiveSelected)?"correct":"wrong"):(reviewReattemptMode?"unattempted":"skipped");
+ const effectiveStatus=effectiveSelected?(correctKeys.includes(effectiveSelected)?"correct":"wrong"):(savedReviewReattemptMode?"unattempted":"skipped");
  const verdict=effectiveStatus==="correct"?'<span class="sol-verdict ok">Correct</span>':effectiveStatus==="wrong"?'<span class="sol-verdict bad">Incorrect</span>':effectiveStatus==="unattempted"?'<span class="sol-verdict neutral">Not Attempted</span>':'<span class="sol-verdict neutral">Skipped</span>';
  const answerText=correctKeys.filter(Boolean).map(k=>`(${esc(k)}) ${formatInline((d.options||{})[k]||"")}`).join(", ")||"Not available";
  const selectedText=effectiveSelected?`(${esc(effectiveSelected)}) ${formatInline((d.options||{})[effectiveSelected]||"")}`:"Not attempted";
@@ -5919,7 +6225,7 @@ function renderSavedAttemptReview(item){
      ${d.subheading?`<span class="review-topic-chip">${esc(d.subheading)}</span>`:""}
      ${verdict}
     </div>
-    <button type="button" class="review-reattempt-toggle ${reviewReattemptMode?"is-on":""}" data-review-reattempt aria-label="Reattempt mode ${reviewReattemptMode?"on":"off"}" aria-pressed="${reviewReattemptMode}" title="Reattempt ${reviewReattemptMode?"On":"Off"}">
+    <button type="button" class="review-reattempt-toggle ${savedReviewReattemptMode?"is-on":""}" data-review-reattempt aria-label="Reattempt mode ${savedReviewReattemptMode?"on":"off"}" aria-pressed="${savedReviewReattemptMode}" title="Reattempt ${savedReviewReattemptMode?"On":"Off"}">
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
     </button>
     ${questionId?`<button type="button" class="history-review-bookmark-icon ${bookmarked?"is-bookmarked":""}" data-history-bookmark="${esc(questionId)}" aria-label="${bookmarked?"Remove bookmark":"Add bookmark"}" aria-pressed="${bookmarked}" title="${bookmarked?"Remove bookmark":"Add bookmark"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>`:""}
@@ -5932,7 +6238,7 @@ function renderSavedAttemptReview(item){
    <div class="saved-review-scroll" tabindex="0" aria-label="Scrollable saved test question, options, answer and explanation. Scroll down for the explanation.">
     <div class="q-stem">${renderStemHTML(d.question||"")}</div>
     <div class="options-list history-review-options" role="group">${opts}</div>
-    <div class="solution-box history-review-solution ${effectiveStatus==="wrong"?"is-wrong":""}" ${reviewReattemptMode&&!effectiveSelected?"hidden":""}>
+    <div class="solution-box history-review-solution ${effectiveStatus==="wrong"?"is-wrong":""}" ${savedReviewReattemptMode&&!effectiveSelected?"hidden":""}>
     <div class="sol-head"><span>Answer &amp; Explanation</span>${verdict}</div>
     <div class="sol-body">
      <div class="history-review-answer"><strong>Your Answer:</strong> ${selectedText}</div>
@@ -5953,6 +6259,7 @@ function renderSavedAttemptReview(item){
 
 function openSavedAttemptReview(index){
  savedReviewExpanded=false;
+ savedReviewReattemptMode=false;
  const items = loadResultHistory();
  const item = items[index];
  if(!item) return;
@@ -6111,17 +6418,11 @@ function renderQuestion(slideDir){
  cs.visited[qIdx] = true;
 
  const total = sess.questions.length;
- $("qCounterBadge").textContent = `${qIdx + 1} out of ${total} Questions`;
  if($("questionPaletteOverlay")?.classList.contains("open")) renderQuestionPalette();
  $("qChapterBadge").textContent = `Chapter ${q.chapter_no}: ${q.chapter_title}`;
  $("qSubheadBadge").textContent = q.subheading || q.chapter_title;
 
  const isBmk = !!state.bookmarks[q.id];
- const bmkBtn = $("topBookmarkBtn");
- const bmkSvg = $("topBookmarkSvg");
- bmkBtn.classList.toggle("is-bookmarked", isBmk);
- bmkBtn.title = isBmk ? "Remove Bookmark" : "Bookmark this question";
- bmkSvg.setAttribute("fill", isBmk ? "currentColor" : "none");
 
  const selected = cs.answers[qIdx] || null;
  const isReview = cs.submitted;
@@ -6222,15 +6523,20 @@ function renderQuestion(slideDir){
  // Calculate solved progress before building HTML that displays it.
  const solvedCount=Object.values(cs.answers).filter(answer=>["A","B","C","D"].includes(answer)).length;
  const progressPct=Math.round((solvedCount/Math.max(1,total))*100);
- const toolsHTML = `<div class="solution-tools">
-  <span class="question-solved-badge" aria-label="${progressPct}% of questions solved">${progressPct}% solved</span>
-  ${instantMode ? `<button type="button" class="solution-tool-btn" data-solution-action="toggle" ${answerIconDisabled?'disabled':''} title="Show answer and explanation" aria-label="Show answer and explanation">ⓘ</button>` : ""}
- </div>`;
+ const toolsHTML = instantMode ? `<div class="solution-tools">
+  <button type="button" class="solution-tool-btn" data-solution-action="toggle" ${answerIconDisabled?'disabled':''} title="Show answer and explanation" aria-label="Show answer and explanation">ⓘ</button>
+ </div>` : "";
  const panelBoxCls = selected && selected !== q.answer ? "solution-box is-wrong" : "solution-box";
  const panelVerdictHTML = selected ? (selected === q.answer ? '<span class="sol-verdict ok">✓ Correct</span>' : `<span class="sol-verdict bad">✗ Incorrect (${selected})</span>`) : "";
  const overlayHTML = showOverlay ? solutionPanelMarkup(q, panelBoxCls, panelVerdictHTML) : "";
  const questionProgressHTML=`<div class="question-progress-strip" aria-label="Question progress">
-  <div class="question-progress-label"><span>Question ${qIdx+1} of ${total}</span></div>
+  <div class="question-progress-label question-progress-label-with-bookmark">
+   <span class="question-solved-badge" aria-label="${progressPct}% of questions solved">${progressPct}% solved</span>
+   <span class="question-progress-counter">${qIdx+1} out of ${total} Questions</span>
+   <button type="button" class="bmk-icon-btn question-progress-bookmark ${isBmk?"is-bookmarked":""}" id="topBookmarkBtn" title="${isBmk?"Remove Bookmark":"Bookmark this question"}" aria-label="${isBmk?"Remove bookmark":"Bookmark this question"}" aria-pressed="${isBmk}">
+    <svg id="topBookmarkSvg" viewBox="0 0 24 24" fill="${isBmk?"currentColor":"none"}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+   </button>
+  </div>
   <div class="question-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${solvedCount}" aria-valuetext="${solvedCount} of ${total} questions solved"><span style="width:${progressPct}%"></span></div>
  </div>`;
  card.innerHTML = `${questionProgressHTML}${toolsHTML}<div class="q-stem">${renderStemHTML(q.question)}</div>
@@ -6244,7 +6550,9 @@ function renderQuestion(slideDir){
  const markBtn = $("markBtn");
  const isMarked = !!cs.marked[qIdx];
  markBtn.classList.toggle("is-marked", isMarked);
- markBtn.textContent = isMarked ? "★ Marked" : "★ Mark for Review";
+ markBtn.setAttribute("aria-pressed", String(isMarked));
+ markBtn.setAttribute("aria-label", isMarked ? "Remove mark for review" : "Mark for review");
+ markBtn.title = isMarked ? "Marked for review — click to remove" : "Mark for review";
  markBtn.disabled = isReview;
 
  $("clearBtn").disabled = (isReview || !selected);
@@ -6394,10 +6702,22 @@ function renderScorecard(){
 
  $("scorecardHomeBtn").onclick = () => goHomeDashboard();
  $("reviewSolutionsBtn").onclick = () => {
-  cs.viewingScorecard = false;
-  state.reviewFilter = "all";
-  saveState();
-  renderChapterView();
+  const history = loadResultHistory();
+  let resultIndex = state.lastSubmittedAttemptId
+   ? history.findIndex(item => item.id === state.lastSubmittedAttemptId)
+   : -1;
+  if(resultIndex < 0){
+   resultIndex = history.findIndex(item => item.chapterKey === sess.key);
+  }
+  if(resultIndex >= 0){
+   openResultHistory();
+   openSavedAttemptReview(resultIndex);
+  }else{
+   cs.viewingScorecard = false;
+   state.reviewFilter = "all";
+   saveState();
+   renderChapterView();
+  }
  };
  $("reattemptBtn").onclick = () => resetCurrentSession();
  if(hasNextChapter){
@@ -6419,7 +6739,10 @@ function renderExitedTestHomeState(){
  const activeKey=state.customSession?"custom_session":(activeBank&&activeChapter?subjectChapterStorageKey(activeBank,activeChapter):null);
  const show=!!exitedKey && exitedKey===activeKey;
  if(panel) panel.hidden=!show;
- if(content) content.hidden=show;
+ // The interrupted-test card is an extra Home section, not a replacement for Home.
+ // Keep dashboard features visible below it; clearing the interrupted session naturally
+ // removes the card and lets the remaining Home content move up in normal document flow.
+ if(content) content.hidden=false;
  if(show){
   const sess=getActiveSession();
 
@@ -6591,7 +6914,9 @@ function finalizeSubmit(){
  {
   const statsForHistory = computeStats(sess, cs);
   const history = loadResultHistory();
-  history.unshift(makeAttemptRecord(sess, cs, statsForHistory));
+  const submittedAttemptRecord = makeAttemptRecord(sess, cs, statsForHistory);
+  state.lastSubmittedAttemptId = submittedAttemptRecord.id;
+  history.unshift(submittedAttemptRecord);
   const historySaved=saveResultHistory(history);
   if(!historySaved)appSetBackupStatus("The test was submitted, but its result was not saved to history. Free browser storage and export a backup before continuing.","error");
   renderHomeRecentResults();
@@ -6651,8 +6976,7 @@ $("resultHistoryModal").addEventListener("click", e => {
  if(e.target === $("resultHistoryModal")){closeResultHistory();return;}
  const retake=e.target.closest("[data-review-reattempt]");
  if(retake){
-  const nextMode=!reviewReattemptMode;
-  setReviewReattemptMode(nextMode);
+  savedReviewReattemptMode=!savedReviewReattemptMode;
   const item=loadResultHistory().find(x=>x.id===activeHistoryAttemptId);
   if(item)renderSavedAttemptReview(item);
   return;
@@ -6669,8 +6993,7 @@ $("resultHistoryModal").addEventListener("click", e => {
     if(activeHistoryFilter==="unclassified")return !d.selected&&typeof d.visited!=="boolean";
     if(activeHistoryFilter==="correct")return d.status==="correct";
     if(activeHistoryFilter==="wrong")return d.status==="wrong";
-    if(activeHistoryFilter==="bookmarked")return !!d.bookmarked||(!Object.prototype.hasOwnProperty.call(d,"bookmarked")&&!!state.bookmarks[d.questionId]);
-    if(activeHistoryFilter==="marked")return !!d.marked;
+    if(activeHistoryFilter==="bookmarked")return !!d.bookmarked||(!Object.prototype.hasOwnProperty.call(d,"bookmarked")&&!!state.bookmarks[d.questionId]);    if(activeHistoryFilter==="marked")return !!d.marked;
     return true;
    });
    const d=filtered[activeHistoryReviewPosition]?.d;
@@ -6788,15 +7111,15 @@ $("confirmResetBtn").addEventListener("click", () => {
  if(action) action();
 });
 
-$("topBookmarkBtn").addEventListener("click", () => {
+$("questionCard").addEventListener("click", (event) => {
+ const bookmarkButton = event.target.closest("#topBookmarkBtn");
+ if(!bookmarkButton) return;
  const sess = getActiveSession();
  const cs = getSessionState(sess);
  const q = sess.questions[cs.currentIdx];
- if(state.bookmarks[q.id]){
-  delete state.bookmarks[q.id];
- } else {
-  state.bookmarks[q.id] = true;
- }
+ if(!q) return;
+ if(state.bookmarks[q.id]) delete state.bookmarks[q.id];
+ else state.bookmarks[q.id] = true;
  syncBookmarkBadge();
  updatePersonalizedMatchCount();
  saveState();
@@ -7556,43 +7879,69 @@ $("submitBtn").addEventListener("click", openSubmitModal);
   },500);
  });
 })();
-$("cancelSubmitBtn").addEventListener("click", closeSubmitModal);
+$("closeSubmitModalBtn").addEventListener("click", closeSubmitModal);
 $("confirmSubmitBtn").addEventListener("click", finalizeSubmit);
 $("submitModal").addEventListener("click", e => { if(e.target === $("submitModal")) closeSubmitModal(); });
 $("resetChapterBtn").addEventListener("click", resetCurrentSession);
 
-$("pauseTimerBtn").addEventListener("click", () => {
- const sess = getActiveSession();
- const cs = getSessionState(sess);
- timerPaused = !timerPaused;
- cs.pausedByAppHide = timerPaused;
- lastSecTickMs = performance.now();
- if(timerPaused){
-  stopTimer();
-  syncTimerUI(lastSecTickMs);
- }else{
-  startTimer(0);
-  syncTimerUI(lastSecTickMs);
- }
+function showInterruptedTestHome(){
+ const sess=getActiveSession();
+ const cs=getSessionState(sess);
+ if(!state.exitedTestKey || state.exitedTestKey!==sess.key || cs.submitted || !cs.testStarted) return false;
+ timerPaused=true;
+ cs.pausedByAppHide=true;
+ stopTimer();
+ isHomeDashboard=true;
+ closeSubmitModal();
+ closePopovers();
+ setDisplayMode("normal");
+ const home=$("homeDashboard"),workspace=$("mockWorkspace"),score=$("scorecardView");
+ if(home)home.hidden=false;
+ if(workspace)workspace.style.display="none";
+ if(score){score.style.display="none";score.classList.remove("active");}
+ document.body.classList.remove("submitted-scorecard-only");
+ document.documentElement.classList.remove("scorecard-scroll-unlocked","primary-lock");
+ document.body.classList.remove("scorecard-scroll-unlocked");
+ updateHomeChapterLabel();
+ renderExitedTestHomeState();
+ renderHomeRecentResults();
  saveState();
-});
-
+ try{window.scrollTo({top:0,behavior:"auto"});}catch(_){}
+ return true;
+}
 function pauseActiveTestForBackground(){
  const sess=getActiveSession(), cs=getSessionState(sess);
  if(displayMode !== "test" || !cs.testStarted || cs.submitted || cs.viewingScorecard) return;
+ const now=performance.now();
+ const remaining=getExactRemainingSec(sess,cs,now);
+ if(getActiveTimerMode(sess)==="per30") cs.qTimeLeft[cs.currentIdx]=Math.ceil(remaining);
+ else if(getActiveTimerMode(sess)==="chapter25") cs.chapterTimeLeft=Math.ceil(remaining);
  timerPaused=true;
  cs.pausedByAppHide=true;
- lastSecTickMs=performance.now();
+ state.exitedTestKey=sess.key;
+ lastSecTickMs=now;
  stopTimer();
- syncTimerUI(lastSecTickMs);
+ syncTimerUI(now);
  saveState();
 }
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden) pauseActiveTestForBackground();
+ if(document.hidden){
+  pauseActiveTestForBackground();
+ }else if(displayMode==="test" && state.exitedTestKey){
+  showInterruptedTestHome();
+ }
 });
 window.addEventListener("pagehide",pauseActiveTestForBackground);
+window.addEventListener("pageshow",()=>{
+ if(displayMode==="test" && state.exitedTestKey){
+  showInterruptedTestHome();
+ }
+});
 document.addEventListener("fullscreenchange",()=>{
- if(displayMode==="test" && !document.fullscreenElement) pauseActiveTestForBackground();
+ if(displayMode==="test" && !document.fullscreenElement){
+  pauseActiveTestForBackground();
+  showInterruptedTestHome();
+ }
 });
 
 /* Selector Change */
@@ -7643,8 +7992,7 @@ $("timerPopover").addEventListener("click", e => {
 $("autoNextCheck").addEventListener("change", e => {
  if(pendingTimerPrefs) pendingTimerPrefs.autoNextOnTimeout = !!e.target.checked;
 });
-$("applyCustomTimerBtn").addEventListener("click", e => {
- e.stopPropagation();
+$("applyCustomTimerBtn").addEventListener("click", e => { e.stopPropagation();
  if(!pendingTimerPrefs) beginTimerSettingsDraft();
  pendingTimerPrefs.customPerSec = Math.max(5, Math.min(600, parseInt($("customPerSecInput").value,10)||30));
  pendingTimerPrefs.customChapterMin = Math.max(1, Math.min(300, parseInt($("customChapMinInput").value,10)||25));
@@ -8643,8 +8991,7 @@ function qbGetPendingDeletion(){
  try{locks=qbReadLocksStrict();}catch(err){qbSetManagerMessage(err.message+" Deletion was stopped to protect locked items.","error");return {subjects,chapters};}
  document.querySelectorAll(".qb-del-subject:checked").forEach(cb=>{
   const b=SUBJECT_BANKS[Number(cb.dataset.qbDelSubject)];
-  if(b&&!b.primary&&!qbIsSubjectLocked(b.name,locks)&&!b.chapters.some(ch=>qbIsChapterLocked(b.name,ch,locks)))subjects.push({name:b.name,index:Number(cb.dataset.qbDelSubject)});
- });
+  if(b&&!b.primary&&!qbIsSubjectLocked(b.name,locks)&&!b.chapters.some(ch=>qbIsChapterLocked(b.name,ch,locks)))subjects.push({name:b.name,index:Number(cb.dataset.qbDelSubject)}); });
  document.querySelectorAll(".qb-del-chapter:checked").forEach(cb=>{
   const bi=Number(cb.dataset.bankIdx),ci=Number(cb.dataset.chapterIdx);
   const b=SUBJECT_BANKS[bi],ch=b&&b.chapters[ci];
