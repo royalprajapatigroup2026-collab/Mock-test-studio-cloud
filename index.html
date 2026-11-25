@@ -8734,6 +8734,34 @@ function qbInitDropZone(){
   qbSetSelectedJsonFile(files[0]);
  });
 }
+async function qbReceiveSharedJsonFile(){
+ const params=new URLSearchParams(location.search);
+ if(params.get("shared")!=="1")return;
+ try{
+  const cache=await caches.open("mock-test-studio-v8");
+  const key=new Request(new URL("__share_target_file__",location.origin).toString());
+  const response=await cache.match(key);
+  if(!response)throw new Error("The shared file was not found. Please share the .json file from Gemini again.");
+  const fileName=response.headers.get("x-share-filename")||"Gemini-questions.json";
+  const fileType=response.headers.get("content-type")||"application/json";
+  const blob=await response.blob();
+  await cache.delete(key);
+  const file=new File([blob],fileName,{type:fileType});
+  qbOpenManager();
+  await qbReadAndValidateFile(file);
+  history.replaceState({},document.title,location.pathname);
+  if(qbSelectedParsedBank){
+   qbRenderPreview();
+   $("qbPreviewPanel").scrollIntoView({behavior:"smooth",block:"center"});
+   qbSetManagerMessage("Gemini JSON received successfully. Review the validation and preview below, then tap Approve & Import Questions to add it to your Question Bank.","success");
+  }
+ }catch(error){
+  qbOpenManager();
+  qbSetManagerMessage("Could not receive the shared JSON file: "+(error&&error.message?error.message:"Unknown error"),"error");
+  history.replaceState({},document.title,location.pathname);
+ }
+}
+
 function qbInitManager(){
  qbRefreshTargetChoices();qbRenderStatsAndBanks();qbInitDropZone();
  $("homeQuestionBankManagerBtn").addEventListener("click",qbOpenManager);
@@ -8778,6 +8806,7 @@ function qbInitManager(){
 }
 populateChapters();
 qbInitManager();
+qbReceiveSharedJsonFile();
 
 /* Consistent Question Bank Manager entry / Student Mode home-only behaviour. */
 $("homeQuestionBankManagerBtn").addEventListener("click",e=>{
