@@ -1,4 +1,4 @@
-package in.royalprajapati.mockteststudio
+package `in`.royalprajapati.mockteststudio
 
 import android.app.Activity
 import android.content.Intent
