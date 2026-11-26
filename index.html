@@ -9916,8 +9916,11 @@ html, body { max-width:100%; }
   sessionStorage.setItem("mts_ai_studio_admin_token",entered);
   try{
    const result=await request("health");
-   if(result.geminiConfigured)showConnection("Connected • "+result.model+" • Gemini API ready","ready");
-   else showConnection("Token accepted • Add GEMINI_API_KEY in Supabase Function Secrets","warn");
+   if(result.geminiConfigured){
+    showConnection("Checking Gemini API connection…","warn");
+    const live=await request("test_gemini");
+    showConnection("Connected • "+live.model+" • Live Gemini API verified","ready");
+   }else showConnection("Token accepted • Gemini Vault key not detected","warn");
    await Promise.all([loadTasks(),loadMemories()]);
    return true;
   }catch(error){
