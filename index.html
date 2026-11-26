@@ -4700,6 +4700,10 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       <button type="button" class="home-action secondary" id="homeQuestionBankManagerBtn">Question Bank Manager</button>
      </div>
     </div>
+    <section class="home-home-shortcuts" aria-label="Study shortcuts">
+     <button type="button" class="home-home-shortcut" id="homeViewAllBookmarksBtn">Bookmarks Question</button>
+     <button type="button" class="home-home-shortcut" id="homeViewAllResultsBtn">Saved Test Results</button>
+    </section>
     <section class="home-study-snapshot" id="homeStudySnapshot" aria-label="Study progress snapshot">
      <div class="home-study-snapshot-head">
       <div><h3>Your Study Snapshot</h3><p>Based on saved answers on this device</p></div>
@@ -4711,25 +4715,8 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       <section class="home-study-trend" aria-label="Recent score trend"><h4>Recent Score Trend</h4><div id="homeScoreTrend"><p class="home-study-muted">Complete a test to build your score trend.</p></div></section>
      </div>
     </section>
-    <section class="home-recent-results" id="homeRecentResults" aria-label="Last three saved test results">
-     <div class="home-recent-head">
-      <div>
-       <h3>Last 3 Saved Test Results</h3>
-       <p>Your most recent completed tests</p>
-      </div>
-      <button type="button" class="home-recent-viewall" id="homeViewAllResultsBtn">View All</button>
-     </div>
-     <div class="home-recent-list" id="homeRecentResultsList">
-      <div class="home-recent-empty">No saved test results yet.</div>
-     </div>
-    </section>
-    <section class="home-recent-results" id="homeBookmarkedQuestions" aria-label="Bookmarked Questions">
-     <div class="home-recent-head">
-      <div><h3>Bookmarked Questions</h3></div>
-      <button type="button" class="home-recent-viewall" id="homeViewAllBookmarksBtn">View All</button>
-     </div>
-     <div class="home-recent-list" id="homeRecentBookmarksList"><div class="home-recent-empty">No bookmarked questions yet.</div></div>
-    </section>
+
+
    </div>
    </section>
 
@@ -10809,6 +10796,32 @@ body.page-workspace-open #bookmarkPracticePage{
  box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:auto!important;z-index:100000!important;
 }
 #resultHistoryModal .saved-review-inline-details .history-details-popup[hidden]{display:none!important}
+</style>
+
+
+<style id="home-bookmark-results-shortcuts-v1">
+/* Two clean home shortcuts directly below Ready to Practice. */
+#homeDashboard .home-home-shortcuts{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;
+ width:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+}
+#homeDashboard .home-home-shortcut{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;min-height:76px!important;padding:16px 12px!important;
+ border:1px solid var(--border-strong)!important;border-radius:15px!important;
+ background:var(--surface)!important;color:var(--text)!important;
+ box-shadow:var(--card-shadow)!important;font:inherit!important;font-size:clamp(.88rem,2.4vw,1rem)!important;
+ font-weight:900!important;text-align:center!important;cursor:pointer!important;
+ transition:border-color .15s ease,transform .15s ease,background .15s ease!important;
+}
+#homeDashboard .home-home-shortcut:hover{
+ border-color:var(--primary)!important;background:var(--primary-soft,var(--surface))!important;
+}
+#homeDashboard .home-home-shortcut:active{transform:scale(.985)!important}
+@media(max-width:420px){
+ #homeDashboard .home-home-shortcuts{grid-template-columns:1fr!important;gap:9px!important}
+ #homeDashboard .home-home-shortcut{min-height:62px!important}
+}
 </style>
 
 </body>
