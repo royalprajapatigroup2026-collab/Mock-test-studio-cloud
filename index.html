@@ -9846,11 +9846,7 @@ html, body { max-width:100%; }
     <button type="button" class="ai-studio-close" id="aiStudioCloseBtn" aria-label="Close">×</button>
    </div>
   </div>
-  <div class="ai-studio-auth" id="aiStudioAuthPanel">
-   <input type="password" id="aiStudioAdminToken" autocomplete="off" placeholder="Access token (one-time setup)">
-   <button type="button" class="ai-studio-small-btn" id="aiStudioConnectBtn">Save & Connect</button>
-   <span class="ai-studio-auth-status" id="aiStudioConnectionStatus"></span>
-  </div>
+  <div class="ai-studio-auth" id="aiStudioAuthPanel" hidden><span class="ai-studio-auth-status" id="aiStudioConnectionStatus"></span></div>
   <div class="ai-studio-grid ai-studio-workspace">
    <section class="ai-studio-pane ai-composer-pane">
     <div id="aiStudioChatLog" class="ai-studio-chat-log" aria-live="polite"><div class="ai-studio-muted">Start a new chat or open a previous conversation.</div></div>
@@ -9905,6 +9901,8 @@ html, body { max-width:100%; }
 (function(){
  "use strict";
  const endpoint="https://cvsobyzmwzcakbtteqol.supabase.co/functions/v1/ai-question-studio";
+ const AI_STUDIO_SUPABASE_KEY="sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
+ const AI_STUDIO_ANON_JWT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
  const modal=document.getElementById("aiQuestionStudioModal");
  const $=function(id){return document.getElementById(id);};
  let pollHandle=null;
@@ -9912,20 +9910,22 @@ html, body { max-width:100%; }
  let attachedFiles=[];
  let selectedMemoryId="";
  let selectedMemoryKey="";
-
- function escapeHtml(value){
-  return String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+ function token(){
+  let id=localStorage.getItem("mts_ai_studio_device_id")||"";
+  if(!/^[0-9a-f-]{36}$/i.test(id)){
+   id=crypto.randomUUID();
+   localStorage.setItem("mts_ai_studio_device_id",id);
+  }
+  return id;
  }
- function token(){return localStorage.getItem("mts_ai_studio_admin_token")||"";}
  async function request(action,payload){
-  if(!token())throw new Error("Enter your AI Studio access token first.");
   const response=await fetch(endpoint,{
    method:"POST",
    headers:{
     "Content-Type":"application/json",
-    "apikey":CLOUD_TEST_KEY,
-    "Authorization":"Bearer "+CLOUD_TEST_ANON_JWT,
-    "x-ai-admin-token":token()
+    "apikey":AI_STUDIO_SUPABASE_KEY,
+    "Authorization":"Bearer "+AI_STUDIO_ANON_JWT,
+    "x-ai-device-id":token()
    },
    body:JSON.stringify(Object.assign({},payload||{},{action:action}))
   });
@@ -9952,29 +9952,17 @@ html, body { max-width:100%; }
   log.scrollTop=log.scrollHeight;
  }
  async function connect(){
-  const entered=$("aiStudioAdminToken").value.trim()||token();
-  if(!entered){showConnection("Enter the access token once to connect.","warn");return false;}
-  const previous=token();
-  if(!previous)localStorage.setItem("mts_ai_studio_admin_token",entered);
   try{
    const result=await request("health");
-   localStorage.setItem("mts_ai_studio_admin_token",entered);
    $("aiStudioAuthPanel").hidden=true;
-   if(result.geminiConfigured){
-    showConnection("Connected","ready");
-    request("test_gemini").then(live=>showConnection("Connected • "+live.model,"ready")).catch(e=>showConnection("Token saved • Gemini check: "+e.message,"warn"));
-   }else showConnection("Connected","ready");
+   showConnection(result.geminiConfigured?"Connected":"Connected • Gemini key not configured","ready");
    await Promise.all([loadTasks(),loadMemories(),loadConversations()]);
    if(conversationId)await openSavedConversation(conversationId).catch(function(){});
    return true;
   }catch(error){
-   if(/401|403|unauthori[sz]ed|invalid.*token|token.*invalid/i.test(error.message)){
-    localStorage.removeItem("mts_ai_studio_admin_token");
-    $("aiStudioAuthPanel").hidden=false;
-   }else{
-    $("aiStudioAuthPanel").hidden=true;
-    showConnection("Saved token retained • "+error.message,"warn");
-   }
+   $("aiStudioAuthPanel").hidden=true;
+   showConnection("Connection error • "+error.message,"warn");
+   status(error.message,"error");
    return false;
   }
  }
@@ -10319,13 +10307,13 @@ html, body { max-width:100%; }
  $("aiStudioPrompt").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendComposer();}else if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();sendComposer();}});
  function openModal(){
   modal.hidden=false;
-  $("aiStudioAdminToken").value=token();
-  $("aiStudioAuthPanel").hidden=!!token();
-  if(token()){connect();setStudioMode("chat");}
-  else setStudioMode("chat");
+  $("aiStudioAuthPanel").hidden=true;
+  token();
+  connect();
+  setStudioMode("chat");
   if(pollHandle)clearInterval(pollHandle);
   pollHandle=setInterval(function(){
-   if(!modal.hidden&&token())loadTasks().catch(function(e){console.warn(e);});
+   if(!modal.hidden)loadTasks().catch(function(e){console.warn(e);});
   },15000);
  }
  function closeModal(){
@@ -10338,7 +10326,6 @@ html, body { max-width:100%; }
  if(qbAiStudioBtn)qbAiStudioBtn.addEventListener("click",openModal);
  $("aiStudioCloseBtn").addEventListener("click",closeModal);
  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
- $("aiStudioConnectBtn").addEventListener("click",connect);
  $("aiStudioTasksRefreshBtn").addEventListener("click",function(){loadTasks().catch(function(e){$("aiStudioFileStatus").textContent=e.message;});});
  $("aiStudioSaveMemoryBtn").addEventListener("click",saveMemory);
  $("aiStudioNewMemoryBtn").addEventListener("click",newMemory);
