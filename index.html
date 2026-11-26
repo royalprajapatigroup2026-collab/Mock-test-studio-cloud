@@ -4677,8 +4677,6 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       <button type="button" class="home-action primary" id="homeStartChapterBtn">Start Selected Chapter</button>
       <button type="button" class="home-action primary" id="homePersonalizedBtn">Personalized Test</button>
       <button type="button" class="home-action secondary" id="homeQuestionBankManagerBtn">Question Bank Manager</button>
-      <button type="button" class="home-action secondary" id="cloudSyncBtn">Sync Published Questions</button>
-      <a class="home-action secondary" href="./publisher.html" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">Open Question Publisher</a>
      </div>
     </div>
     <section class="home-study-snapshot" id="homeStudySnapshot" aria-label="Study progress snapshot">
@@ -9194,79 +9192,6 @@ syncPopoverControls();
 syncBookmarkBadge();
 isHomeDashboard = true;
 renderChapterView();
-// Cloud publisher sync: additive only; never replaces the local Question Bank.
-const CLOUD_SYNC_LEDGER_KEY = "mockStudio.cloudSyncBatches.v1";
-function cloudSyncIdentityQuestion(q){return qbQuestionIdentity(q);}
-function cloudSyncPreflight(batch,bankList=SUBJECT_BANKS){
- const canonical=qbCanonicaliseImportedBank(batch.bank);
- if(!canonical.bank || canonical.errors.length) return {error:"Cloud batch failed local validation: "+canonical.errors.join(" ")};
- const bank=canonical.bank, mode=batch.mode==="merge"?"merge":"new";
- if(mode==="new"){
-  if(bankList.some(b=>qbNorm(b.name)===qbNorm(bank.subject))) return {error:`New subject "${bank.subject}" already exists locally. Publish this batch as a merge instead.`};
-  return {record:{mode:"new",bank}};
- }
- const targetName=String(batch.target_subject||"").trim();
- const matches=bankList.filter(b=>qbNorm(b.name)===qbNorm(targetName));
- if(matches.length!==1) return {error:matches.length?`More than one local subject is named "${targetName}"; merge stopped to avoid choosing the wrong bank.`:`Target subject "${targetName}" was not found on this device.`};
- const target=matches[0];let additions=0,duplicates=0;
- for(const incomingChapter of bank.chapters){
-  const dest=qbFindChapterByTitle(target.chapters,incomingChapter.title);
-  if(!dest){additions+=incomingChapter.questions.length;continue;}
-  const existing=new Map();
-  (dest.questions||[]).forEach(q=>{const id=cloudSyncIdentityQuestion(q);if(!existing.has(id))existing.set(id,new Set());existing.get(id).add(String(q.answer||"").toUpperCase());});
-  const incomingSeen=new Map();
-  for(const q of incomingChapter.questions){
-   const identity=cloudSyncIdentityQuestion(q),answer=String(q.answer||"").toUpperCase();
-   const old=existing.get(identity)||incomingSeen.get(identity);
-   if(old&&old.size){if(!old.has(answer))return {error:`Answer conflict in "${incomingChapter.title}": same question/options have a different answer. No changes were saved.`};duplicates++;continue;}
-   if(!incomingSeen.has(identity))incomingSeen.set(identity,new Set());incomingSeen.get(identity).add(answer);additions++;
-  }
- }
- if(!additions) return {duplicate:true,duplicates};
- return {record:{mode:"merge",target_subject:target.name,bank},duplicates,additions};
-}
-async function cloudSyncPublishedQuestions(){
- const button=$("cloudSyncBtn");if(button){button.disabled=true;button.textContent="Syncing…";}
- try{
-  const response=await fetch("/api/questions",{cache:"no-store"});
-  const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Cloud sync endpoint is unavailable.");
-  const batches=Array.isArray(data.batches)?data.batches:[];
-  let ledger=[];try{ledger=JSON.parse(localStorage.getItem(CLOUD_SYNC_LEDGER_KEY)||"[]");if(!Array.isArray(ledger))throw new Error();}catch(_){throw new Error("Cloud sync history is unreadable. Export a Full Backup before attempting repair.");}
-  const seen=new Set(ledger.map(String)),records=qbReadStoredRecordsStrict(),deletions=qbReadDeletionStateStrict();
-  const shadowBanks=SUBJECT_BANKS.map(b=>JSON.parse(JSON.stringify(b)));
-  const newLedger=ledger.slice();let added=0,skipped=0;const issues=[];
-  for(const batch of batches){
-   const id=String(batch.batch_id||"");if(!id||seen.has(id))continue;
-   const check=cloudSyncPreflight(batch,shadowBanks);
-   if(check.error){issues.push(`${batch.subject||"Unnamed batch"}: ${check.error}`);continue;}
-   if(check.duplicate){newLedger.push(id);seen.add(id);skipped++;continue;}
-   records.push({...check.record,cloud_batch_id:id});newLedger.push(id);seen.add(id);added+=(check.additions||check.record.bank.total_questions||0);skipped+=(check.duplicates||0);
-   if(check.record.mode==="merge"){const shadowTarget=shadowBanks.find(b=>qbNorm(b.name)===qbNorm(check.record.target_subject));if(shadowTarget)qbMergeRawBank(shadowTarget,check.record.bank);}else{shadowBanks.push({name:check.record.bank.subject,subject:check.record.bank.subject,chapters:JSON.parse(JSON.stringify(check.record.bank.chapters))});}
-   const subjectName=check.record.mode==="merge"?check.record.target_subject:check.record.bank.subject;
-   if(check.record.mode==="new"){
-    deletions.subjects=deletions.subjects.filter(v=>qbNorm(v)!==qbNorm(subjectName));
-    deletions.chapters=deletions.chapters.filter(v=>qbNorm(v.subject)!==qbNorm(subjectName));
-   }else{
-    deletions.chapters=deletions.chapters.filter(entry=>!(entry&&qbNorm(entry.subject)===qbNorm(subjectName)&&check.record.bank.chapters.some(ch=>entry.title&&qbNorm(entry.title)===qbNorm(ch.title))));
-   }
-  }
-  if(newLedger.length!==ledger.length){
-   const updates={
-    [QUESTION_BANK_STORAGE_KEY]:JSON.stringify(records),
-    [QUESTION_BANK_DELETIONS_KEY]:JSON.stringify({subjects:Array.from(new Set(deletions.subjects.map(qbNorm))),chapters:deletions.chapters}),
-    [CLOUD_SYNC_LEDGER_KEY]:JSON.stringify(newLedger)
-   };
-   if(!qbCommitStorageUpdates(updates,"Cloud sync stopped. Your previous local data was restored where possible."))throw new Error("Could not save synced questions. Existing data was not intentionally overwritten.");
-  }
-  let message=`Cloud sync complete. ${added} new question(s) queued; ${skipped} duplicate(s) skipped.`;
-  if(issues.length)message+="\n\nNeeds attention:\n• "+issues.join("\n• ");
-  if(added){message+="\nThe app will reload to activate the new questions. Your saved results, bookmarks and settings are not replaced.";alert(message);window.location.reload();}
-  else alert(message+(batches.length?"":"\nNo published batches are available yet."));
- }catch(error){alert("Cloud sync could not finish: "+error.message);}
- finally{if(button){button.disabled=false;button.textContent="Sync Published Questions";}}
-}
-$("cloudSyncBtn")?.addEventListener("click",cloudSyncPublishedQuestions);
-
 // Default landing state is Home; questions open only after a selected action.
 setDisplayMode("normal");
 if(state.exitedTestKey){
