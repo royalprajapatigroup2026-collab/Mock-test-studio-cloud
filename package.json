@@ -1,9 +1,6 @@
 {
-  "name": "mock-test-studio-cloud-publisher",
+  "name": "mock-test-studio-cloud",
   "version": "1.0.0",
   "private": true,
-  "description": "Approval-based Gemini JSON publisher and cloud sync for Mock Test Studio",
-  "dependencies": {
-    "@netlify/blobs": "^8.2.0"
-  }
+  "description": "Static Mock Test Studio application"
 }
