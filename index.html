@@ -8488,12 +8488,44 @@ function cloudRefreshChapterSelector(selectedIndex){
  }
  refreshAllAppSelects();
 }
+function injectApprovedAiQuestions(rows){
+ let changed=false;
+ (rows||[]).filter(r=>r.target_subject&&Array.isArray(r.questions)).forEach(function(row){
+  const bank=SUBJECT_BANKS.find(b=>String(b.name)===String(row.target_subject));
+  if(!bank)return;
+  const chapter=bank.chapters.find(ch=>String(ch.id)===String(row.target_chapter_id)||String(ch.title)===String(row.target_chapter_title));
+  if(!chapter)return;
+  if(!Array.isArray(chapter.questions))chapter.questions=[];
+  row.questions.forEach(function(raw,i){
+   const id="ai_"+String(row.id)+"_"+i;
+   if(chapter.questions.some(q=>String(q.id)===id))return;
+   const opts=Array.isArray(raw.options)?raw.options:[];
+   const options={A:String(opts[0]||""),B:String(opts[1]||""),C:String(opts[2]||""),D:String(opts[3]||"")};
+   const answer=["A","B","C","D"][Number(raw.correctAnswer)]||"";
+   if(!raw.question||!answer||Object.values(options).some(v=>!v.trim()))return;
+   const q={id:id,question:String(raw.question),options:options,answer:answer,explanation:String(raw.explanation||""),subheading:String(raw.topic||row.title),difficulty:String(raw.difficulty||"UPSC EPFO APFC"),chapter_no:chapter.chapter_no,chapter_title:chapter.title,qno:chapter.questions.length+1,question_type:"single_correct",questionType:"single_correct",source_reference:String(raw.sourceReference||"")};
+   chapter.questions.push(q);
+   const effectiveId=effectiveQuestionId(bank,q);
+   Q_MAP.set(effectiveId,{...q,id:effectiveId,original_id:id,chapter_idx:bank.chapters.indexOf(chapter),orig_idx:chapter.questions.length-1,subject_name:bank.name,subject_key:bank.key,source_chapter_id:chapter.id,source_storage_key:subjectChapterStorageKey(bank,chapter)});
+   changed=true;
+  });
+ });
+ if(changed){
+  refreshAllAppSelects();
+  renderPersonalizedChapterChoices();
+  updatePersonalizedMatchCount();
+  if(typeof activeSubjectBank!=="undefined"&&activeSubjectBank)CHAPTERS=activeSubjectBank.chapters;
+  if(!isHomeDashboard)renderChapterView();
+  updateHomeChapterLabel();
+ }
+}
 async function loadCloudPublishedTests(){
  try{
   const response=await fetch(CLOUD_TEST_API,{headers:{apikey:CLOUD_TEST_KEY,Authorization:"Bearer "+CLOUD_TEST_ANON_JWT}});
   if(!response.ok) throw new Error("HTTP "+response.status);
   const rows=await response.json();
-  cloudPublishedTests=Array.isArray(rows)?rows.filter(t=>Array.isArray(t.questions)&&t.questions.length):[];
+  cloudPublishedTests=Array.isArray(rows)?rows.filter(t=>Array.isArray(t.questions)&&t.questions.length&&!t.target_subject):[];
+  injectApprovedAiQuestions(Array.isArray(rows)?rows:[]);
   const subjectSel=$("partSelect");
   if(!subjectSel) return;
   const existing=subjectSel.querySelector('option[value="__cloud_published__"]');
@@ -9807,57 +9839,61 @@ html, body { max-width:100%; }
 <div id="aiQuestionStudioModal" hidden>
  <div class="ai-studio-card" role="dialog" aria-modal="true" aria-labelledby="aiStudioTitle">
   <div class="ai-studio-head">
-   <div><p class="ai-studio-kicker">Gemini • Task Queue • Persistent Memory</p><h2 id="aiStudioTitle">✨ AI Question Studio</h2></div>
-   <button type="button" class="ai-studio-close" id="aiStudioCloseBtn" aria-label="Close">×</button>
+   <div class="ai-studio-brand"><h2 id="aiStudioTitle">AI Question Studio</h2></div>
+   <div class="ai-studio-head-actions">
+    <button type="button" class="ai-studio-icon" id="aiStudioMemoryToggle" title="Memory" aria-label="Memory">▣</button>
+    <button type="button" class="ai-studio-icon" id="aiStudioTasksToggle" title="Task Manager" aria-label="Task Manager">◷</button>
+    <button type="button" class="ai-studio-close" id="aiStudioCloseBtn" aria-label="Close">×</button>
+   </div>
   </div>
-  <div class="ai-studio-auth">
-   <input type="password" id="aiStudioAdminToken" autocomplete="off" placeholder="Paste AI Studio access token">
-   <button type="button" class="ai-studio-small-btn" id="aiStudioConnectBtn">Unlock / Connect</button>
-   <span class="ai-studio-auth-status" id="aiStudioConnectionStatus">Locked — API key is configured on the server, not here.</span>
+  <div class="ai-studio-auth" id="aiStudioAuthPanel">
+   <input type="password" id="aiStudioAdminToken" autocomplete="off" placeholder="Access token (one-time setup)">
+   <button type="button" class="ai-studio-small-btn" id="aiStudioConnectBtn">Save & Connect</button>
+   <span class="ai-studio-auth-status" id="aiStudioConnectionStatus"></span>
   </div>
   <div class="ai-studio-grid ai-studio-workspace">
    <section class="ai-studio-pane ai-composer-pane">
-    <div class="ai-composer-heading"><div><span class="ai-studio-kicker">PROMPT WORKSPACE</span><h3>What should Gemini do?</h3><p>Write your complete instructions below. Add source files when needed.</p></div><span class="ai-composer-spark">✦</span></div>
-    <div class="ai-studio-field full">
-     <label for="aiStudioPrompt">Your prompt</label>
-     <textarea id="aiStudioPrompt" class="ai-prompt-editor" rows="14" placeholder="Example: Create 50 UPSC EPFO APFC-level MCQs from the attached Bare Act. Cover every section and proviso, include statement-based and factual questions, explain each answer and simplify difficult English legal terms…"></textarea>
-     <div class="ai-prompt-foot"><span>No app-imposed character limit</span><span id="aiPromptCharCount">0 characters</span></div>
+    <div id="aiStudioChatLog" class="ai-studio-chat-log" aria-live="polite"></div>
+    <textarea id="aiStudioPrompt" class="ai-prompt-editor" rows="10" placeholder="Ask Gemini or describe the questions you want to generate…"></textarea>
+    <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,.xlsx,.pptx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
+    <div class="ai-composer-bar">
+     <button type="button" class="ai-composer-icon ai-attach-icon" id="aiStudioAttachBtn" title="Attach files" aria-label="Attach files">📎</button>
+     <div class="ai-mode-switch" role="group" aria-label="Task or Chat mode">
+      <button type="button" id="aiStudioTaskModeBtn" class="active" aria-pressed="true">Task</button>
+      <button type="button" id="aiStudioChatModeBtn" aria-pressed="false">Chat</button>
+     </div>
+     <button type="button" class="ai-composer-icon ai-voice-icon" id="aiStudioVoiceBtn" title="Voice input" aria-label="Voice input">🎙</button>
+     <button type="button" class="ai-composer-icon ai-send-icon" id="aiStudioSendBtn" title="Send" aria-label="Send">➤</button>
     </div>
-    <div class="ai-attach-area">
-     <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,.xlsx,.pptx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
-     <button type="button" class="ai-attach-btn" id="aiStudioAttachBtn"><span>＋</span> Add files</button>
-     <span class="ai-studio-muted">PDF, TXT, DOCX, XLSX, PPTX, CSV, JSON, Markdown and text files</span>
-     <div id="aiStudioFileList" class="ai-file-list" aria-live="polite"></div>
-     <p id="aiStudioFileStatus" class="ai-studio-muted">Drop files here or attach them. Text is extracted and sent with your prompt; scanned PDFs may need OCR first.</p>
-    </div>
-    <div class="ai-composer-footer">
-     <label class="ai-schedule-label" for="aiStudioRunAt">Run now or schedule</label>
-     <input type="datetime-local" id="aiStudioRunAt" aria-label="Optional scheduled start time">
-     <button type="button" class="ai-studio-main-btn ai-create-task-btn" id="aiStudioCreateTaskBtn"><span>✦</span> Create AI task</button>
-    </div>
+    <div id="aiStudioFileList" class="ai-file-list" aria-live="polite"></div>
+    <div id="aiStudioFileStatus" class="ai-studio-muted" aria-live="polite"></div>
     <div class="ai-studio-status" id="aiStudioFormStatus" role="status" aria-live="polite"></div>
-    <p class="ai-studio-hint">Gemini will generate the requested question set in batches, validate it and publish it to your existing online mock-test list when complete. Include the desired question count and exam level in your prompt.</p>
+    <input type="datetime-local" id="aiStudioRunAt" aria-label="Optional scheduled time" hidden>
+    <section id="aiStudioReviewPanel" class="ai-review-panel" hidden>
+     <div class="ai-review-head"><strong id="aiStudioReviewTitle">Preview questions</strong><button type="button" id="aiStudioReviewClose" class="ai-studio-small-btn">×</button></div>
+     <div id="aiStudioReviewList" class="ai-review-list"></div>
+     <button type="button" id="aiStudioApproveBtn" class="ai-approve-btn">Approve & Add to Selected Chapter</button>
+    </section>
    </section>
    <aside class="ai-studio-side">
-    <section class="ai-studio-pane ai-task-pane">
-     <div class="ai-task-top"><div><span class="ai-studio-kicker">BACKGROUND WORK</span><h3>Task Manager</h3></div><button type="button" class="ai-studio-small-btn" id="aiStudioTasksRefreshBtn" title="Refresh tasks">↻</button></div>
-     <div class="ai-task-list" id="aiStudioTaskList"><div class="ai-studio-muted">Connect to load your tasks.</div></div>
+    <section class="ai-studio-pane ai-task-pane" id="aiStudioTaskPanel" hidden>
+     <div class="ai-task-top"><h3>Tasks</h3><button type="button" class="ai-studio-small-btn" id="aiStudioTasksRefreshBtn" title="Refresh">↻</button></div>
+     <div class="ai-task-list" id="aiStudioTaskList"><div class="ai-studio-muted">No tasks yet.</div></div>
     </section>
-    <section class="ai-studio-pane ai-memory-pane">
-     <div class="ai-task-top"><div><span class="ai-studio-kicker">PERSISTENT CONTEXT</span><h3>Personal Memory</h3></div><button type="button" class="ai-studio-small-btn" id="aiStudioNewMemoryBtn">＋ Add</button></div>
-     <div id="aiStudioMemoryList" class="ai-memory-list"><div class="ai-studio-muted">Connect to load saved memories.</div></div>
+    <section class="ai-studio-pane ai-memory-pane" id="aiStudioMemoryPanel" hidden>
+     <div class="ai-task-top"><h3>Memory</h3><button type="button" class="ai-studio-small-btn" id="aiStudioNewMemoryBtn" title="Add memory">＋</button></div>
+     <div id="aiStudioMemoryList" class="ai-memory-list"></div>
      <div class="ai-memory-editor">
-      <label for="aiStudioMemoryKey">Memory title</label><input class="ai-studio-memory-input" id="aiStudioMemoryKey" placeholder="e.g. Exam preferences">
-      <label for="aiStudioMemoryContent">What should Gemini remember?</label><textarea id="aiStudioMemoryContent" class="ai-memory-content" placeholder="Add your preferences, instructions or useful context…"></textarea>
-      <div class="ai-studio-action"><button type="button" class="ai-studio-main-btn" id="aiStudioSaveMemoryBtn">Save memory</button><button type="button" class="ai-studio-small-btn" id="aiStudioCancelMemoryBtn">Cancel</button></div>
+      <input class="ai-studio-memory-input" id="aiStudioMemoryKey" placeholder="Memory title">
+      <textarea id="aiStudioMemoryContent" class="ai-memory-content" placeholder="What should Gemini remember?"></textarea>
+      <div class="ai-studio-action"><button type="button" class="ai-studio-main-btn" id="aiStudioSaveMemoryBtn">Save</button><button type="button" class="ai-studio-small-btn" id="aiStudioCancelMemoryBtn">Cancel</button></div>
      </div>
-     <p id="aiStudioMemoryStatus" class="ai-studio-muted">Saved memories are supplied as context to future Gemini tasks.</p>
+     <p id="aiStudioMemoryStatus" class="ai-studio-muted"></p>
     </section>
    </aside>
   </div>
  </div>
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -9876,7 +9912,7 @@ html, body { max-width:100%; }
  function escapeHtml(value){
   return String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
  }
- function token(){return sessionStorage.getItem("mts_ai_studio_admin_token")||"";}
+ function token(){return localStorage.getItem("mts_ai_studio_admin_token")||"";}
  async function request(action,payload){
   if(!token())throw new Error("Enter your AI Studio access token first.");
   const response=await fetch(endpoint,{
@@ -9914,7 +9950,7 @@ html, body { max-width:100%; }
  async function connect(){
   const entered=$("aiStudioAdminToken").value.trim()||token();
   if(!entered){showConnection("Enter the access token.", "warn");return false;}
-  sessionStorage.setItem("mts_ai_studio_admin_token",entered);
+  localStorage.setItem("mts_ai_studio_admin_token",entered);
   try{
    const result=await request("health");
    if(result.geminiConfigured){
@@ -9922,10 +9958,12 @@ html, body { max-width:100%; }
     const live=await request("test_gemini");
     showConnection("Connected • "+live.model+" • Live Gemini API verified","ready");
    }else showConnection("Token accepted • Gemini Vault key not detected","warn");
+   $("aiStudioAuthPanel").hidden=true;
    await Promise.all([loadTasks(),loadMemories()]);
    return true;
   }catch(error){
-   sessionStorage.removeItem("mts_ai_studio_admin_token");
+   localStorage.removeItem("mts_ai_studio_admin_token");
+   $("aiStudioAuthPanel").hidden=false;
    showConnection(error.message,"warn");
    return false;
   }
@@ -9940,7 +9978,7 @@ html, body { max-width:100%; }
    const schedule=t.scheduled_at?new Date(t.scheduled_at).toLocaleString():"";
    const published=t.published_test_id?" • Published test ID: "+t.published_test_id:"";
    const error=t.last_error?'<div class="ai-task-meta" style="color:var(--bad)">'+escapeHtml(t.last_error)+'</div>':"";
-   return '<div class="ai-task-card"><div class="ai-task-top"><div class="ai-task-title">'+escapeHtml(t.title)+'</div><div class="ai-task-state">'+escapeHtml(state)+'</div></div><div class="ai-task-meta">'+escapeHtml(detail+" • "+schedule+published)+'</div><div class="ai-task-progress"><span style="width:'+progress+'%"></span></div>'+error+'</div>';
+   return '<div class="ai-task-card"><div class="ai-task-top"><div class="ai-task-title">'+escapeHtml(t.title)+'</div><div class="ai-task-state">'+escapeHtml(state)+'</div></div><div class="ai-task-meta">'+escapeHtml(detail+" • "+schedule+published)+'</div><div class="ai-task-progress"><span style="width:'+progress+'%"></span></div>'+error+(t.status==="ready_for_review"?'<button type="button" class="ai-task-review-btn" data-preview-task="'+escapeHtml(t.id)+'">Preview & Approve</button>':"")+'</div>';
   }).join("");
  }
  async function loadTasks(){
@@ -10065,11 +10103,12 @@ html, body { max-width:100%; }
   try{
    const result=await request("create_task",{
     title:title,requested_count:count,scheduled_at:runAt.toISOString(),prompt:prompt,
-    settings:{testTitle:title,subject:"Labour Laws — Mixed",topic:"Follow the complete user prompt",difficulty:"UPSC EPFO APFC level",language:"English with simple explanations",sourceText:sourceText}
+    settings:{testTitle:title,subject:"UPSC EPFO APFC",topic:"Follow the complete user prompt",difficulty:"UPSC EPFO APFC level",language:"English with simple explanations",sourceText:sourceText,targetSubject:(SUBJECT_BANKS[Number(state.subjectIdx)||0]||{}).name||"",targetChapterId:((SUBJECT_BANKS[Number(state.subjectIdx)||0]||{}).chapters||[])[Number(state.chapterIdx)||0]?.id||"",targetChapterTitle:((SUBJECT_BANKS[Number(state.subjectIdx)||0]||{}).chapters||[])[Number(state.chapterIdx)||0]?.title||""}
    });
    const task=result.task||{};
-   status("Task created successfully. Status: "+(task.status||"queued")+". You can follow its progress in Task Manager.","success");
+   status("Task added to queue.","success");
    await loadTasks();
+   if(task.status==="ready_for_review"||task.generated_count>=task.requested_count)await previewTask(task.id);
   }catch(error){status(error.message,"error");}
  }
  async function saveMemory(){
@@ -10141,9 +10180,91 @@ html, body { max-width:100%; }
    });
   }catch(error){status(error.message,"error");}
  }
+ let studioMode="task";
+ let activeReviewTaskId="";
+ let conversationId=localStorage.getItem("mts_ai_studio_conversation")||"";
+ function setStudioMode(mode){
+  studioMode=mode;
+  $("aiStudioTaskModeBtn").classList.toggle("active",mode==="task");
+  $("aiStudioChatModeBtn").classList.toggle("active",mode==="chat");
+  $("aiStudioTaskModeBtn").setAttribute("aria-pressed",String(mode==="task"));
+  $("aiStudioChatModeBtn").setAttribute("aria-pressed",String(mode==="chat"));
+ }
+ function currentTarget(){
+  const bank=SUBJECT_BANKS[Number(state.subjectIdx)||0];
+  const chapter=bank&&bank.chapters[Number(state.chapterIdx)||0];
+  return {targetSubject:bank?bank.name:"",targetChapterId:chapter?String(chapter.id):"",targetChapterTitle:chapter?chapter.title:""};
+ }
+ async function previewTask(id){
+  try{
+   const data=await request("get_task",{id:id}),task=data.task||{};
+   if(!Array.isArray(task.generated_questions)||!task.generated_questions.length)throw new Error("Questions are not ready yet.");
+   activeReviewTaskId=id;
+   $("aiStudioReviewTitle").textContent=task.title+" · "+task.generated_questions.length+" questions";
+   $("aiStudioReviewList").innerHTML=task.generated_questions.map(function(q,i){
+    const opts=Array.isArray(q.options)?q.options:[];
+    const answer=Number(q.correctAnswer);
+    return '<article class="ai-review-question"><strong>Q'+(i+1)+'. '+escapeHtml(q.question)+'</strong>'+opts.map(function(o,j){return '<p>'+(j===answer?'✓ ':'')+String.fromCharCode(65+j)+'. '+escapeHtml(o)+'</p>';}).join("")+'<p><b>Explanation:</b> '+escapeHtml(q.explanation||"")+'</p></article>';
+   }).join("");
+   $("aiStudioReviewPanel").hidden=false;
+   $("aiStudioReviewPanel").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }catch(error){status(error.message,"error");}
+ }
+ async function approveReview(){
+  if(!activeReviewTaskId)return;
+  const target=currentTarget();
+  if(!target.targetSubject||!target.targetChapterId){status("Select the destination subject and chapter in the main app first.","error");return;}
+  try{
+   $("aiStudioApproveBtn").disabled=true;
+   await request("approve_task",{id:activeReviewTaskId});
+   $("aiStudioReviewPanel").hidden=true;
+   activeReviewTaskId="";
+   status("Approved and added to "+target.targetSubject+" · "+target.targetChapterTitle+".","success");
+   await loadTasks();
+   await refreshPublishedTests();
+  }catch(error){status(error.message,"error");}
+  finally{$("aiStudioApproveBtn").disabled=false;}
+ }
+ async function sendChat(){
+  const input=$("aiStudioPrompt"),message=input.value.trim();
+  if(!message)return;
+  appendChat("user",message);input.value="";
+  const target=currentTarget();
+  const asksQuestions=/(generate|create|prepare|make|बनाओ|बनाइए|तैयार).{0,80}(question|mcq|quiz|प्रश्न)|(?:question|mcq|quiz).{0,80}(generate|create|prepare|बनाओ|तैयार)/i.test(message);
+  try{
+   const data=await request("chat",{message:message,conversation_id:conversationId,generate_questions:asksQuestions,requested_count:(message.match(/(\d{1,3})\s*(?:mcqs?|questions?)/i)||[])[1]||20,sourceText:attachedFiles.map(f=>"\n\n"+f.name+"\n"+f.text).join(""),targetSubject:target.targetSubject,targetChapterId:target.targetChapterId,targetChapterTitle:target.targetChapterTitle});
+   if(data.review_task){appendChat("model","Questions generated. Open Preview & Approve to add them to the selected chapter.");await loadTasks();await previewTask(data.review_task.id);}
+   else{conversationId=data.conversation.id;localStorage.setItem("mts_ai_studio_conversation",conversationId);appendChat("model",data.answer||"");}
+  }catch(error){appendChat("model","Error: "+error.message);}
+ }
+ function sendComposer(){
+  if(studioMode==="chat")return sendChat();
+  return createTask();
+ }
+ function startVoiceInput(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){status("Voice typing is not supported in this browser. Try Chrome on Android.","error");return;}
+  const rec=new SR();rec.lang="en-IN";rec.interimResults=true;rec.continuous=false;
+  $("aiStudioVoiceBtn").classList.add("listening");
+  rec.onresult=function(event){let text="";for(let i=event.resultIndex;i<event.results.length;i++)text+=event.results[i][0].transcript;$("aiStudioPrompt").value=($("aiStudioPrompt").value+" "+text).trim();};
+  rec.onerror=function(event){status("Voice input: "+event.error,"error");};
+  rec.onend=function(){$("aiStudioVoiceBtn").classList.remove("listening");};
+  try{rec.start();}catch(e){$("aiStudioVoiceBtn").classList.remove("listening");status("Could not start voice input.","error");}
+ }
+ $("aiStudioTaskModeBtn").addEventListener("click",function(){setStudioMode("task");});
+ $("aiStudioChatModeBtn").addEventListener("click",function(){setStudioMode("chat");});
+ $("aiStudioSendBtn").addEventListener("click",sendComposer);
+ $("aiStudioVoiceBtn").addEventListener("click",startVoiceInput);
+ $("aiStudioTasksToggle").addEventListener("click",function(){$("aiStudioTaskPanel").hidden=!$("aiStudioTaskPanel").hidden;$("aiStudioMemoryPanel").hidden=true;if(token())loadTasks().catch(e=>status(e.message,"error"));});
+ $("aiStudioMemoryToggle").addEventListener("click",function(){$("aiStudioMemoryPanel").hidden=!$("aiStudioMemoryPanel").hidden;$("aiStudioTaskPanel").hidden=true;if(token())loadMemories().catch(e=>status(e.message,"error"));});
+ $("aiStudioReviewClose").addEventListener("click",function(){$("aiStudioReviewPanel").hidden=true;});
+ $("aiStudioApproveBtn").addEventListener("click",approveReview);
+ $("aiStudioTaskList").addEventListener("click",function(e){const b=e.target.closest("[data-preview-task]");if(b)previewTask(b.dataset.previewTask);});
+ $("aiStudioPrompt").addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter")sendComposer();});
  function openModal(){
   modal.hidden=false;
   $("aiStudioAdminToken").value=token();
+  $("aiStudioAuthPanel").hidden=!!token();
   if(token())connect();
   if(pollHandle)clearInterval(pollHandle);
   pollHandle=setInterval(function(){
@@ -10267,5 +10388,56 @@ html, body { max-width:100%; }
 }
 </style>
 
+
+<style id="ai-studio-conversational-v3">
+#aiQuestionStudioModal{padding:0!important;align-items:stretch!important;background:var(--bg)!important}
+#aiQuestionStudioModal .ai-studio-card{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border:0!important;border-radius:0!important;display:flex;flex-direction:column}
+#aiQuestionStudioModal .ai-studio-head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.ai-studio-brand h2{font-size:1rem;margin:0;font-weight:900}
+.ai-studio-head-actions{display:flex;align-items:center;gap:7px}
+.ai-studio-icon,.ai-studio-close{width:38px;height:38px;border:1px solid var(--border-strong);border-radius:11px;background:var(--surface);color:var(--primary);font-size:1.15rem;font-weight:900;display:grid;place-items:center}
+.ai-studio-close{color:var(--text);font-size:1.35rem}
+#aiStudioAuthPanel{padding:8px 12px;gap:7px}
+#aiStudioAuthPanel[hidden]{display:none!important}
+#aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,340px);gap:12px;padding:12px;flex:1;min-height:0;overflow:auto}
+#aiQuestionStudioModal .ai-composer-pane{display:flex;flex-direction:column;min-height:0;padding:12px;border-radius:17px}
+#aiStudioChatLog{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0;max-height:36vh;margin-bottom:8px}
+#aiStudioChatLog:empty{display:none}
+#aiQuestionStudioModal .ai-prompt-editor{width:100%;min-height:180px;max-height:52vh;resize:vertical;border:1px solid var(--border-strong);border-radius:15px;padding:13px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:1rem;line-height:1.6}
+.ai-composer-bar{display:flex;align-items:center;gap:9px;padding:8px;margin-top:8px;border:1px solid var(--border-strong);border-radius:15px;background:var(--surface-alt)}
+.ai-composer-icon{width:42px;height:42px;flex:0 0 42px;border:0;border-radius:12px;background:var(--surface);color:var(--primary);font-size:1.25rem;display:grid;place-items:center}
+.ai-send-icon{background:var(--primary);color:white;font-size:1.35rem}
+.ai-voice-icon.listening{background:var(--bad-bg);color:var(--bad);outline:2px solid var(--bad-border)}
+.ai-mode-switch{display:flex;align-items:center;gap:2px;margin:auto;border:1px solid var(--border);border-radius:999px;padding:3px;background:var(--surface)}
+.ai-mode-switch button{border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;font-weight:850;font-size:.78rem}
+.ai-mode-switch button.active{background:var(--primary);color:white}
+#aiQuestionStudioModal .ai-studio-side{display:grid;align-content:start;gap:10px;min-width:0}
+#aiQuestionStudioModal .ai-studio-side [hidden]{display:none!important}
+#aiQuestionStudioModal .ai-task-pane,#aiQuestionStudioModal .ai-memory-pane{padding:12px;border-radius:16px}
+#aiQuestionStudioModal .ai-task-top{display:flex;justify-content:space-between;align-items:center}
+#aiQuestionStudioModal .ai-task-top h3{margin:0;font-size:.95rem}
+#aiQuestionStudioModal .ai-task-list{max-height:65vh;overflow:auto}
+#aiQuestionStudioModal .ai-memory-list{max-height:34vh;overflow:auto}
+.ai-task-card{padding:10px;margin:8px 0;border:1px solid var(--border);border-radius:12px;background:var(--surface-alt)}
+.ai-task-review-btn{margin-top:7px;border:1px solid var(--primary);border-radius:9px;padding:6px 10px;color:var(--primary);background:var(--primary-soft);font-size:.75rem;font-weight:850}
+.ai-review-panel{margin-top:12px;border:1px solid var(--border-strong);border-radius:14px;padding:12px;background:var(--surface-alt)}
+.ai-review-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ai-review-list{max-height:42vh;overflow:auto;margin:8px 0}
+.ai-review-question{padding:10px;margin:8px 0;border:1px solid var(--border);border-radius:11px;background:var(--surface);font-size:.8rem}
+.ai-review-question p{margin:5px 0;white-space:pre-wrap}
+.ai-approve-btn{width:100%;border:0;border-radius:11px;padding:11px;background:var(--ok);color:white;font-weight:900}
+.ai-file-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.ai-studio-muted{font-size:.72rem;color:var(--muted)}
+@media(max-width:760px){
+ #aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{grid-template-columns:minmax(0,1fr);padding:8px}
+ #aiQuestionStudioModal .ai-studio-side{grid-template-columns:minmax(0,1fr)}
+ #aiQuestionStudioModal .ai-composer-pane{min-height:55vh}
+ #aiQuestionStudioModal .ai-prompt-editor{min-height:170px}
+ #aiStudioChatLog{max-height:28vh}
+ .ai-composer-bar{gap:5px;padding:6px}
+ .ai-composer-icon{width:38px;height:38px;flex-basis:38px}
+ .ai-mode-switch button{padding:7px 12px}
+}
+</style>
 </body>
 </html>
