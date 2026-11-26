@@ -10348,5 +10348,68 @@ body.page-workspace-open #bookmarkPracticePage{
 #resultHistoryModal .saved-review-question-nav{position:static!important}
 </style>
 
+
+<style id="bookmark-history-question-scroll-chain-v1">
+/* Restore the fixed-height question viewport and let native gestures chain
+   to the outer page when the inner question reaches its top or bottom. */
+#bookmarkPracticePage .bookmark-practice-card,
+#resultHistoryModal .history-review-single-question{
+ display:flex!important;flex-direction:column!important;min-height:0!important;overflow:visible!important;
+}
+#bookmarkPracticePage .bookmark-practice-scroll,
+#resultHistoryModal .saved-review-scroll{
+ display:block!important;position:relative!important;flex:0 1 auto!important;
+ height:clamp(210px,calc(100dvh - 470px),520px)!important;
+ min-height:190px!important;max-height:520px!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important;
+ touch-action:pan-y!important;scrollbar-gutter:stable!important;
+ padding:2px 4px 10px 2px!important;
+}
+#bookmarkPracticePage .bookmark-practice-controls,
+#resultHistoryModal .saved-review-question-nav{position:static!important;flex:0 0 auto!important}
+html:has(body.page-workspace-open),body.page-workspace-open{
+ overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;
+}
+body.page-workspace-open #bookmarkPracticePage{
+ height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ position:fixed!important;inset:8px!important;z-index:10050!important;
+ display:flex!important;flex-direction:column!important;height:auto!important;max-height:none!important;overflow:hidden!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll{
+ flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-controls{flex:0 0 auto!important}
+#resultHistoryModal{
+ align-items:flex-start!important;justify-content:flex-start!important;
+ overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;
+ -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+}
+#resultHistoryModal > .history-modal-card,
+#resultHistoryModal > .modal-card.history-modal-card{
+ position:relative!important;inset:auto!important;display:flex!important;flex:0 0 auto!important;
+ flex-direction:column!important;flex-wrap:nowrap!important;height:auto!important;
+ min-height:100dvh!important;max-height:none!important;overflow:visible!important;
+}
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:fixed!important;inset:8px!important;z-index:10060!important;
+ display:flex!important;flex-direction:column!important;width:auto!important;height:auto!important;
+ max-height:none!important;overflow:hidden!important;
+}
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
+ flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+}
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-question-nav{flex:0 0 auto!important}
+@media(max-width:600px){
+ #bookmarkPracticePage .bookmark-practice-scroll,#resultHistoryModal .saved-review-scroll{
+  height:clamp(190px,calc(100dvh - 420px),430px)!important;min-height:170px!important;max-height:430px!important;
+ }
+ #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
+ #resultHistoryModal .history-review-single-question.review-panel-expanded{inset:4px!important}
+}
+</style>
+
 </body>
 </html>
