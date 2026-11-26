@@ -4704,6 +4704,9 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
      <button type="button" class="home-home-shortcut" id="homeViewAllBookmarksBtn">Bookmarks Question</button>
      <button type="button" class="home-home-shortcut" id="homeViewAllResultsBtn">Saved Test Results</button>
     </section>
+    <!-- Hidden compatibility hosts: existing preview renderers and delegated listeners still use these IDs. -->
+    <div id="homeRecentResultsList" hidden aria-hidden="true"></div>
+    <div id="homeRecentBookmarksList" hidden aria-hidden="true"></div>
     <section class="home-study-snapshot" id="homeStudySnapshot" aria-label="Study progress snapshot">
      <div class="home-study-snapshot-head">
       <div><h3>Your Study Snapshot</h3><p>Based on saved answers on this device</p></div>
