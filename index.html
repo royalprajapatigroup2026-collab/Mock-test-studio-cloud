@@ -4709,13 +4709,14 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
      </div>
      <div class="home-recent-list" id="homeRecentBookmarksList"><div class="home-recent-empty">No bookmarked questions yet.</div></div>
     </section>
-   </div>
-   </section>
    <section class="home-recent-results" id="cloudPublishedTests" aria-label="Published online mock tests">
     <div class="home-recent-head"><div><h3>☁️ Published Online Mock Tests</h3><p>Tests published from the cloud question library</p></div><button type="button" class="home-recent-viewall" id="cloudReloadTests">Refresh</button></div>
     <div id="cloudTestList" class="home-recent-list"><div class="home-recent-empty">Loading published tests…</div></div>
     <div id="cloudTestRunner" hidden style="margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface)"></div>
    </section>
+   </div>
+   </section>
+
    <section class="home-recent-results app-data-safety-card" id="appDataSafetyCard" aria-label="App Data Backup and Restore">
     <div class="home-recent-head">
      <div><h3>App Data Backup &amp; Restore</h3></div>
@@ -9591,6 +9592,7 @@ html, body { max-width:100%; }
 (()=>{
  const API="https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions&is_published=eq.true&order=created_at.desc";
  const KEY="sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
+ const ANON_JWT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
  const list=document.getElementById("cloudTestList"), runner=document.getElementById("cloudTestRunner"), refresh=document.getElementById("cloudReloadTests");
  if(!list||!runner||!refresh)return;
  let tests=[];
@@ -9598,7 +9600,7 @@ html, body { max-width:100%; }
  async function load(){
   list.innerHTML='<div class="home-recent-empty">Loading published tests…</div>';
   try{
-   const r=await fetch(API,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
+   const r=await fetch(API,{headers:{apikey:KEY,Authorization:"Bearer "+ANON_JWT}});
    if(!r.ok)throw new Error("Cloud returned HTTP "+r.status);
    tests=await r.json();
    if(!Array.isArray(tests)||!tests.length){list.innerHTML='<div class="home-recent-empty">No published tests available.</div>';return;}
