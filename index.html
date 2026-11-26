@@ -6190,11 +6190,6 @@ function renderResultHistory(){
 let activeHistoryFilter = "all";
 let activeHistoryReviewPosition=0;
 function renderSavedAttemptReview(item){
- const reviewHeader=$("resultHistoryModal").querySelector(".modal-head.history-icon-close-head");
- const detailsWrap=$("historyReviewDetailsBtn")?.parentElement;
- const reviewClose=$("closeResultHistoryBtn");
- if(reviewHeader&&detailsWrap)reviewHeader.appendChild(detailsWrap);
- if(reviewHeader&&reviewClose)reviewHeader.appendChild(reviewClose);
  const questions=Array.isArray(item.details)?item.details:[];
  const isBookmarked=d=>!!d.bookmarked||(!Object.prototype.hasOwnProperty.call(d,"bookmarked")&&!!state.bookmarks[d.questionId]);
  $("historySummary").hidden=true;
@@ -6306,15 +6301,8 @@ function renderSavedAttemptReview(item){
     <button type="button" class="act-btn next-btn" data-history-review-nav="next" aria-label="Next question" ${activeHistoryReviewPosition===filtered.length-1?"disabled":""}>Next →</button>
    </div>
   </article>`;
- const head=host.querySelector(".saved-review-question-head");
- const detailsWrap=$("historyReviewDetailsBtn")?.parentElement;
- const close=$("closeResultHistoryBtn");
- const reattempt=head?.querySelector("[data-review-reattempt]");
- const bookmark=head?.querySelector(".history-review-bookmark-icon");
- if(head&&detailsWrap&&reattempt)head.insertBefore(detailsWrap,reattempt);
- if(head&&close)head.insertBefore(close,bookmark?bookmark.nextSibling:reattempt?.nextSibling||null);
 }
- 
+
 function openSavedAttemptReview(index){
  savedReviewExpanded=true;
  savedReviewReattemptMode=false;
@@ -7330,9 +7318,6 @@ let bookmarkPracticeAnswers=migrateQuestionAnswerMap(loadReviewAnswerMap(REVIEW_
 const REVIEW_BOOKMARK_RETAKE_ANSWERS_KEY="mockStudio.bookmarkReviewRetakeAnswers.v1";
 let bookmarkPracticeRetakeAnswers=migrateQuestionAnswerMap(loadReviewAnswerMap(REVIEW_BOOKMARK_RETAKE_ANSWERS_KEY));
 function renderBookmarkPracticePage(){
- const pageHeader=$("bookmarkPracticePage").querySelector(".bookmark-practice-review-header");
- const pageClose=$("bookmarkPracticeCloseBtn");
- if(pageHeader&&pageClose)pageHeader.appendChild(pageClose);
  const host=$("bookmarkPracticeList");
  const items=bookmarkPracticeQueue;
  $("bookmarkPracticeCount").textContent=String(getBookmarkedQuestionItems().length);
@@ -7367,7 +7352,7 @@ function renderBookmarkPracticePage(){
  }
  host.innerHTML=`<article class="bookmark-practice-card ${bookmarkReviewExpanded?"review-panel-expanded":""}" data-bookmark-card="${esc(q.id)}">
   <div class="bookmark-practice-card-head">
-   <div class="bookmark-practice-meta"><span>${esc(q.subject_name||"")}${q.subject_name?" · ":""}${esc(q.chapter_title||"")}</span></div>
+   <div class="bookmark-practice-meta"><span>${esc(q.subject_name||"")}${q.subject_name?" · ":""}Chapter ${esc(q.chapter_no||"")}: ${esc(q.chapter_title||"")}</span>${q.subheading?`<span class="bookmark-topic-chip">${esc(q.subheading)}</span>`:""}</div>
    <button type="button" class="review-reattempt-toggle ${reviewReattemptMode?"is-on":""}" data-review-reattempt aria-label="Reattempt mode ${reviewReattemptMode?"on":"off"}" aria-pressed="${reviewReattemptMode}" title="Reattempt ${reviewReattemptMode?"On":"Off"}">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
    </button>
@@ -7391,10 +7376,6 @@ function renderBookmarkPracticePage(){
    <button type="button" class="act-btn next-btn" data-bookmark-nav="next" aria-label="Next question" ${bookmarkPracticeIndex===items.length-1?"disabled":""}>Next →</button>
   </div>
  </article>`;
- const card=host.querySelector(".bookmark-practice-card");
- const head=card?.querySelector(".bookmark-practice-card-head");
- const close=$("bookmarkPracticeCloseBtn");
- if(head&&close)head.appendChild(close);
 }
 function openBookmarkPracticePage(){
  bookmarkReviewExpanded=true;
@@ -10724,80 +10705,6 @@ body.page-workspace-open #bookmarkPracticePage{
  #resultHistoryModal .history-review-single-question.review-panel-expanded{
   top:52px!important;right:3px!important;bottom:3px!important;left:3px!important;
  }
-}
-</style>
-
-
-<style id="review-controls-order-and-true-fullscreen-v2">
-/* Question review fills the available screen; the question/navigation area uses the whole card. */
-#bookmarkPracticePage .bookmark-practice-review-header{display:none!important}
-#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
-#resultHistoryModal .history-review-single-question.review-panel-expanded{
- position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
- min-height:100dvh!important;max-height:100dvh!important;margin:0!important;
- padding:8px!important;border:0!important;border-radius:0!important;
- box-sizing:border-box!important;z-index:10090!important;
-}
-#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll,
-#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
- flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;
-}
-#bookmarkPracticePage .bookmark-practice-card-head,
-#resultHistoryModal .saved-review-question-head{
- display:flex!important;align-items:center!important;justify-content:flex-start!important;
- flex-wrap:nowrap!important;gap:7px!important;margin:0 0 8px!important;
-}
-#bookmarkPracticePage .bookmark-practice-meta,
-#resultHistoryModal .saved-review-topic-status{
- flex:1 1 auto!important;min-width:0!important;margin:0 auto 0 0!important;
- display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:5px!important;
-}
-#bookmarkPracticePage .bookmark-practice-meta span,
-#resultHistoryModal .saved-review-topic-status .ch-chip{
- font-size:.88rem!important;font-weight:800!important;
-}
-#resultHistoryModal .saved-review-topic-status .review-topic-chip,
-#resultHistoryModal .saved-review-topic-status .sol-verdict{display:none!important}
-#resultHistoryModal .history-review-single-question .saved-review-question-head [data-review-expand],
-#bookmarkPracticePage .bookmark-practice-card-head [data-review-expand]{display:none!important}
-#bookmarkPracticePage .bookmark-practice-card-head .review-reattempt-toggle,
-#resultHistoryModal .saved-review-question-head .review-reattempt-toggle{order:2!important}
-#bookmarkPracticePage .bookmark-practice-card-head .bookmark-card-toggle,
-#resultHistoryModal .saved-review-question-head .history-review-bookmark-icon{order:3!important}
-#bookmarkPracticePage #bookmarkPracticeCloseBtn,
-#resultHistoryModal #closeResultHistoryBtn{
- order:4!important;flex:0 0 36px!important;width:36px!important;height:36px!important;
- min-width:36px!important;min-height:36px!important;margin:0!important;padding:0!important;
- display:inline-flex!important;align-items:center!important;justify-content:center!important;
- border:1px solid #fecdd3!important;border-radius:10px!important;
- background:#fff1f2!important;color:#e11d48!important;font-size:1.55rem!important;
- line-height:1!important;box-shadow:none!important;
-}
-#bookmarkPracticePage #bookmarkPracticeCloseBtn:hover,
-#resultHistoryModal #closeResultHistoryBtn:hover{
- background:#ffe4e6!important;color:#be123c!important;border-color:#fda4af!important;
-}
-#bookmarkPracticePage .bookmark-details-trigger{display:none!important}
-#bookmarkPracticePage .bookmark-practice-card-head .bookmark-practice-meta{order:1!important}
-#resultHistoryModal .saved-review-question-head .compact-header-details-wrap{
- order:1!important;flex:0 0 36px!important;width:36px!important;margin:0!important;
-}
-#resultHistoryModal .saved-review-question-head .history-details-trigger{
- width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;
-}
-#resultHistoryModal .saved-review-question-head .saved-review-topic-status{order:0!important}
-#resultHistoryModal .modal-head.history-icon-close-head{display:none!important}
-#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-question-nav,
-#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-controls{
- flex:0 0 auto!important;margin:0!important;padding:4px 0!important;
-}
-@media(max-width:600px){
- #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
- #resultHistoryModal .history-review-single-question.review-panel-expanded{
-  inset:0!important;padding:6px!important;
- }
- #bookmarkPracticePage .bookmark-practice-card-head,
- #resultHistoryModal .saved-review-question-head{gap:5px!important}
 }
 </style>
 
