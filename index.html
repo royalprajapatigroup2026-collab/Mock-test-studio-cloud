@@ -8421,7 +8421,7 @@ $("startTestBtn").addEventListener("click", e => {
    as every locally stored chapter. */
 let cloudPublishedTests = [];
 let cloudSubjectActive = false;
-const CLOUD_TEST_API = "https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions&is_published=eq.true&order=created_at.desc";
+const CLOUD_TEST_API = "https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions,target_subject,target_chapter_id,target_chapter_title&is_published=eq.true&order=created_at.desc";
 const CLOUD_TEST_KEY = "sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
 const CLOUD_TEST_ANON_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
 function cloudQuestionToStudioQuestion(raw, test, index){
@@ -10225,7 +10225,7 @@ html, body { max-width:100%; }
   }catch(error){status(error.message,"error");}
   finally{$("aiStudioApproveBtn").disabled=false;}
  }
- async function sendChat(){
+ async function sendChatComposer(){
   const input=$("aiStudioPrompt"),message=input.value.trim();
   if(!message)return;
   appendChat("user",message);input.value="";
@@ -10238,7 +10238,7 @@ html, body { max-width:100%; }
   }catch(error){appendChat("model","Error: "+error.message);}
  }
  function sendComposer(){
-  if(studioMode==="chat")return sendChat();
+  if(studioMode==="chat")return sendChatComposer();
   return createTask();
  }
  function startVoiceInput(){
