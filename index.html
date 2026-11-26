@@ -8224,11 +8224,21 @@ function requestAppFullscreen(){
  try{ const p = root.requestFullscreen({navigationUI:"hide"}); if(p && typeof p.catch === "function") p.catch(() => {}); }catch(_){}
 }
 
+function exitActiveTestToSavedResults(){
+ const sess=getActiveSession();
+ const cs=getSessionState(sess);
+ cs.pausedByAppHide=true;
+ state.exitedTestKey=sess.key;
+ timerPaused=true;
+ stopTimer();
+ goHomeDashboard();
+ openResultHistory();
+}
 /* Back handling for Test Mode and Study Mode.
    Test Mode: Back is trapped.
    Study Mode: first Back is ignored; second Back within 2 seconds exits Study Mode.
    The Android Home gesture is deliberately untouched. */
-const TEST_BACK_GUARD_DEPTH = 4;
+const TEST_BACK_GUARD_DEPTH = 1;
 const STUDY_BACK_EXIT_WINDOW_MS = 2000;
 let testBackGuardActive = false;
 let testBackGuardSequence = 0;
@@ -8315,10 +8325,12 @@ function handleStudyModeBack(){
   history.pushState({mockTestStudioStudyGuard:true},"",location.href);
  }catch(_){}
 }
-window.addEventListener("popstate",()=>{
+window.addEventListener("popstate",event=>{
  if(testBackGuardActive && displayMode==="test"){
-  // Test Mode never exits through device/browser Back.
-  pushTestBackSentinel();
+  // One Android Back exits the active test to Saved Test Results.
+  releaseTestBackGuard();
+  exitActiveTestToSavedResults();
+  if(event&&event.stopImmediatePropagation)event.stopImmediatePropagation();
   return;
  }
  if(studyBackGuardActive && displayMode==="study"){
@@ -8334,6 +8346,8 @@ window.addEventListener("keydown",e=>{
  if(testBackGuardActive && displayMode==="test"){
   e.preventDefault();e.stopPropagation();
   if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  releaseTestBackGuard();
+  exitActiveTestToSavedResults();
   return;
  }
  if(studyBackGuardActive && displayMode==="study"){
