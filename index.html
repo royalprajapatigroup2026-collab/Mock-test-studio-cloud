@@ -9844,6 +9844,11 @@ html, body { max-width:100%; }
      <textarea id="aiStudioChatInput" placeholder="Ask Gemini to refine your instructions, plan a chapter-wise question task, or remember a study rule..."></textarea>
      <button type="button" class="ai-studio-main-btn" id="aiStudioChatSendBtn">Send</button>
     </div>
+    <div class="ai-studio-action">
+     <select id="aiStudioSavedChats" aria-label="Saved Gemini conversations" style="flex:1;min-width:0;border:1px solid var(--border-strong);border-radius:9px;padding:7px;background:var(--surface-alt);color:var(--text);font-size:.75rem"><option value="">Saved conversations…</option></select>
+     <button type="button" class="ai-studio-small-btn" id="aiStudioOpenSavedChatBtn">Open chat</button>
+     <button type="button" class="ai-studio-small-btn" id="aiStudioRefreshChatsBtn">↻</button>
+    </div>
     <div class="ai-studio-action"><button type="button" class="ai-studio-small-btn" id="aiStudioNewChatBtn">New conversation</button></div>
    </section>
 
@@ -9921,7 +9926,7 @@ html, body { max-width:100%; }
     const live=await request("test_gemini");
     showConnection("Connected • "+live.model+" • Live Gemini API verified","ready");
    }else showConnection("Token accepted • Gemini Vault key not detected","warn");
-   await Promise.all([loadTasks(),loadMemories()]);
+   await Promise.all([loadTasks(),loadMemories(),loadConversations()]);
    return true;
   }catch(error){
    sessionStorage.removeItem("mts_ai_studio_admin_token");
@@ -10026,12 +10031,39 @@ html, body { max-width:100%; }
    conversationId=data.conversation.id;
    sessionStorage.setItem("mts_ai_studio_conversation",conversationId);
    appendChat("model",data.answer||"No response text returned.");
+   loadConversations().catch(function(e){console.warn(e);});
   }catch(error){appendChat("model","Error: "+error.message);}
  }
  function newChat(){
   conversationId="";
   sessionStorage.removeItem("mts_ai_studio_conversation");
   $("aiStudioChatLog").innerHTML='<div class="ai-studio-muted">New conversation. Saved memory is still available to Gemini.</div>';
+ }
+ async function loadConversations(){
+  const data=await request("list_conversations");
+  const select=$("aiStudioSavedChats");
+  const current=select.value;
+  const rows=data.conversations||[];
+  select.innerHTML='<option value="">Saved conversations…</option>'+rows.map(function(c){
+   return '<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.title)+' · '+escapeHtml(new Date(c.updated_at).toLocaleString())+'</option>';
+  }).join("");
+  if(rows.some(function(c){return c.id===current;}))select.value=current;
+ }
+ async function openSavedConversation(){
+  const id=$("aiStudioSavedChats").value;
+  if(!id)return;
+  try{
+   const data=await request("load_conversation",{id:id});
+   const convo=data.conversation||{};
+   conversationId=convo.id||id;
+   sessionStorage.setItem("mts_ai_studio_conversation",conversationId);
+   const log=$("aiStudioChatLog");
+   log.innerHTML="";
+   (convo.messages||[]).forEach(function(m){
+    const message=(m.parts||[]).map(function(p){return p.text||"";}).join("");
+    appendChat(m.role==="user"?"user":"model",message);
+   });
+  }catch(error){status(error.message,"error");}
  }
  function openModal(){
   modal.hidden=false;
@@ -10056,6 +10088,8 @@ html, body { max-width:100%; }
  $("aiStudioSaveMemoryBtn").addEventListener("click",saveMemory);
  $("aiStudioChatSendBtn").addEventListener("click",sendChat);
  $("aiStudioNewChatBtn").addEventListener("click",newChat);
+ $("aiStudioOpenSavedChatBtn").addEventListener("click",openSavedConversation);
+ $("aiStudioRefreshChatsBtn").addEventListener("click",function(){loadConversations().catch(function(e){status(e.message,"error");});});
  $("aiStudioChatInput").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
  $("aiStudioAdminToken").addEventListener("keydown",function(e){if(e.key==="Enter")connect();});
 })();
