@@ -9309,7 +9309,7 @@ async function qbReceiveSharedJsonFile(){
  const params=new URLSearchParams(location.search);
  if(params.get("shared")!=="1")return;
  try{
-  const cache=await caches.open("mock-test-studio-v16");
+  const cache=await caches.open("mock-test-studio-v17");
   const key=new Request(new URL("__share_target_file__",location.origin).toString());
   const response=await cache.match(key);
   if(!response)throw new Error("The shared file could not be found. Please share it again.");
@@ -10138,6 +10138,41 @@ html, body { max-width:100%; }
  // Arm one same-URL history entry after the app has loaded.
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",pushGuard,{once:true});
  else pushGuard();
+})();
+</script>
+
+<style id="disable-native-copy-menu-v1">
+/* Disable native long-press callouts and text selection across the app.
+   Editable controls retain normal selection, editing and paste behavior. */
+html, body, body *:not(input):not(textarea):not(select):not([contenteditable="true"]):not([contenteditable="true"] *) {
+ -webkit-touch-callout:none!important;
+ -webkit-user-select:none!important;
+ user-select:none!important;
+}
+</style>
+<script id="disable-native-copy-menu-v1">
+(function(){
+ const isEditable=function(target){
+  return !!(target&&target.closest&&target.closest('input,textarea,select,[contenteditable="true"],[role="textbox"]'));
+ };
+ document.addEventListener("contextmenu",function(event){
+  if(!isEditable(event.target)){
+   event.preventDefault();
+   event.stopPropagation();
+  }
+ },true);
+ document.addEventListener("selectstart",function(event){
+  if(!isEditable(event.target)){
+   event.preventDefault();
+   event.stopPropagation();
+  }
+ },true);
+ document.addEventListener("dblclick",function(event){
+  if(!isEditable(event.target)){
+   event.preventDefault();
+   event.stopPropagation();
+  }
+ },true);
 })();
 </script>
 </body>
