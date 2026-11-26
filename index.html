@@ -4455,6 +4455,25 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
 .exp-statement-body .exp-line{margin:0 0 5px; line-height:1.65}
 .exp-statement-body .exp-line:last-child{margin-bottom:0}
 </style>
+
+<style id="mocktest-review-back-and-spacing-fix-v1">
+/* Android Back is the only exit control for the full-screen review workspaces. */
+#bookmarkPracticePage #bookmarkPracticeCloseBtn,
+#resultHistoryModal #closeResultHistoryBtn,
+#bookmarkPracticePage .review-close-inline,
+#resultHistoryModal .review-close-inline{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+/* Leave roughly one complete option-card height before the solution panel. */
+#bookmarkPracticePage .bookmark-practice-feedback{
+ margin-top:64px!important;
+}
+#resultHistoryModal .history-review-solution{
+ margin-top:64px!important;
+}
+</style>
 </head>
 <body>
 
@@ -7003,6 +7022,9 @@ document.addEventListener("click",e=>{
 
 let reviewNavLayer=null;
 window.addEventListener("popstate",()=>{
+ // The Android back guard owns this popstate when it has already performed
+ // the matching in-app transition. Prevent a second transition in this listener.
+ if(window.__mockReviewBackHandled){window.__mockReviewBackHandled=false;return;}
  if(reviewNavLayer==="bookmark"){closeBookmarkPracticePage(true);return;}
  if(reviewNavLayer==="saved-review"){backToResultHistory();reviewNavLayer="saved-list";return;}
  if(reviewNavLayer==="saved-list"){closeResultHistory(true);return;}
@@ -10182,13 +10204,28 @@ html, body { max-width:100%; }
    return true;
   }
   const bookmarks=document.getElementById("bookmarkPracticePage");
-  if(visible(bookmarks)){document.getElementById("bookmarkPracticeBackBtn")?.click();return true;}
+  if(visible(bookmarks)){
+   // Device Back exits the bookmark workspace once; do not trigger a second history.back().
+   window.__mockReviewBackHandled=true;
+   if(typeof window.closeBookmarkPracticePage==="function")window.closeBookmarkPracticePage(true);
+   else document.getElementById("bookmarkPracticePage").hidden=true;
+   return true;
+  }
   const historyModal=document.getElementById("resultHistoryModal");
   if(historyModal&&historyModal.classList.contains("open")){
    const review=document.getElementById("historyReviewPage");
-   if(visible(review)&&typeof window.backToResultHistory==="function"){window.backToResultHistory();return true;}
-   if(typeof window.closeResultHistory==="function")window.closeResultHistory();
-   else document.getElementById("closeResultHistoryBtn")?.click();
+   if(visible(review)&&typeof window.backToResultHistory==="function"){
+    // First Back from a reviewed attempt returns to the saved-results list.
+    window.__mockReviewBackHandled=true;
+    window.backToResultHistory();
+    if(typeof reviewNavLayer!=="undefined")reviewNavLayer="saved-list";
+    return true;
+   }
+   // A second Back closes the saved-results list and returns to its caller.
+   window.__mockReviewBackHandled=true;
+   if(typeof window.closeResultHistory==="function")window.closeResultHistory(true);
+   else historyModal.classList.remove("open");
+   if(typeof reviewNavLayer!=="undefined")reviewNavLayer=null;
    return true;
   }
   const submit=document.getElementById("submitModal");
