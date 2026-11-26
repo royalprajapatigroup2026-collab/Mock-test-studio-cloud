@@ -6304,7 +6304,7 @@ function renderSavedAttemptReview(item){
 }
 
 function openSavedAttemptReview(index){
- savedReviewExpanded=false;
+ savedReviewExpanded=true;
  savedReviewReattemptMode=false;
  const items = loadResultHistory();
  const item = items[index];
@@ -7378,7 +7378,7 @@ function renderBookmarkPracticePage(){
  </article>`;
 }
 function openBookmarkPracticePage(){
- bookmarkReviewExpanded=false;
+ bookmarkReviewExpanded=true;
  document.body.classList.add("page-workspace-open");
  bookmarkPracticeQueue=getBookmarkedQuestionItems().slice();
  bookmarkPracticeIndex=0;
@@ -10637,6 +10637,75 @@ body.page-workspace-open #bookmarkPracticePage{
 #bookmarkPracticePage .bookmark-details-count strong{font-size:1.35rem!important;font-weight:900!important;color:var(--primary)!important}
 #bookmarkPracticePage .bookmark-details-count span{font-size:.8rem!important;font-weight:800!important}
 #resultHistoryModal .history-review-toolbar{display:none!important}
+</style>
+
+
+<style id="auto-expanded-review-with-details-toolbar-v1">
+/* Open Bookmark Practice and Saved Test Review in full-screen expanded mode.
+   Keep the compact Details control and red close button in a persistent top bar. */
+#bookmarkPracticePage .bookmark-practice-review-header{
+ position:sticky!important;top:0!important;z-index:10080!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ width:100%!important;height:50px!important;min-height:50px!important;
+ margin:0 0 6px!important;padding:4px 4px 6px!important;
+ border:0!important;border-bottom:0!important;background:var(--bg)!important;
+ box-shadow:none!important;
+}
+#bookmarkPracticePage:has(.bookmark-practice-card.review-panel-expanded) .bookmark-practice-review-header{
+ display:flex!important;visibility:visible!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ position:fixed!important;top:56px!important;right:4px!important;bottom:4px!important;left:4px!important;
+ z-index:10050!important;height:auto!important;max-height:none!important;
+}
+#bookmarkPracticePage .bookmark-practice-card-head [data-review-expand],
+#resultHistoryModal .history-review-single-question .saved-review-question-head [data-review-expand]{
+ display:none!important;
+}
+#bookmarkPracticePage .bookmark-details-popup .history-details-popup-title{
+ display:none!important;
+}
+#bookmarkPracticePage .bookmark-details-popup{top:calc(100% + 6px)!important;left:0!important;right:auto!important}
+#bookmarkPracticePage #bookmarkPracticeCloseBtn,
+#resultHistoryModal #closeResultHistoryBtn{
+ order:2!important;margin-left:auto!important;
+ background:#fff1f2!important;background-color:#fff1f2!important;
+ border:1px solid #fecdd3!important;color:#e11d48!important;
+ box-shadow:none!important;
+}
+#bookmarkPracticePage #bookmarkPracticeCloseBtn:hover,
+#resultHistoryModal #closeResultHistoryBtn:hover{
+ background:#ffe4e6!important;background-color:#ffe4e6!important;color:#be123c!important;
+ border-color:#fda4af!important;
+}
+/* Saved Test Results review header: details on left, close on right, no title or tinted strip. */
+#resultHistoryModal .modal-head.history-icon-close-head:has(+ #historySummary + #resultHistoryList + #historyReviewPage[hidden="false"]),
+#resultHistoryModal .modal-head.history-icon-close-head{
+ position:sticky!important;top:0!important;z-index:10080!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ width:100%!important;min-height:50px!important;height:50px!important;
+ margin:0 0 6px!important;padding:4px!important;
+ border:0!important;border-bottom:0!important;background:var(--surface)!important;
+ box-shadow:none!important;
+}
+#resultHistoryModal .modal-head.history-icon-close-head .compact-header-details-wrap{order:0!important;margin-right:auto!important}
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:fixed!important;top:56px!important;right:4px!important;bottom:4px!important;left:4px!important;
+ width:auto!important;height:auto!important;max-height:none!important;
+ z-index:10060!important;
+}
+#resultHistoryModal .history-details-popup-title{display:none!important}
+#resultHistoryModal .history-review-toolbar{display:none!important}
+#bookmarkPracticePage .bookmark-practice-review-title,
+#bookmarkPracticePage .bookmark-practice-header-title,
+#resultHistoryModal .history-header-title,
+#resultHistoryModal .history-header-icon{display:none!important}
+@media(max-width:600px){
+ #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
+ #resultHistoryModal .history-review-single-question.review-panel-expanded{
+  top:52px!important;right:3px!important;bottom:3px!important;left:3px!important;
+ }
+}
 </style>
 
 </body>
