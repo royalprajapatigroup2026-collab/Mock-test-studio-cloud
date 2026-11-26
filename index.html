@@ -9854,6 +9854,10 @@ html, body { max-width:100%; }
   <div class="ai-studio-grid ai-studio-workspace">
    <section class="ai-studio-pane ai-composer-pane">
     <div id="aiStudioChatLog" class="ai-studio-chat-log" aria-live="polite"><div class="ai-studio-muted">Start a new chat or open a previous conversation.</div></div>
+    <div class="ai-composer-mode-row"><div class="ai-mode-switch" role="group" aria-label="Task or Chat mode">
+      <button type="button" id="aiStudioChatModeBtn" class="active" aria-pressed="true">Chat</button>
+      <button type="button" id="aiStudioTaskModeBtn" aria-pressed="false">Task</button>
+     </div></div>
     <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,.xlsx,.pptx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
     <div class="ai-composer-bar">
      <button type="button" class="ai-composer-icon ai-attach-icon" id="aiStudioAttachBtn" title="Attach files" aria-label="Attach files">＋</button>
@@ -9861,10 +9865,6 @@ html, body { max-width:100%; }
      <button type="button" class="ai-composer-icon ai-voice-icon" id="aiStudioVoiceBtn" title="Voice input" aria-label="Voice input">🎙</button>
      <button type="button" class="ai-composer-icon ai-send-icon" id="aiStudioSendBtn" title="Send" aria-label="Send">➤</button>
     </div>
-    <div class="ai-composer-mode-row"><div class="ai-mode-switch" role="group" aria-label="Task or Chat mode">
-      <button type="button" id="aiStudioChatModeBtn" class="active" aria-pressed="true">Chat</button>
-      <button type="button" id="aiStudioTaskModeBtn" aria-pressed="false">Task</button>
-     </div></div>
     <div id="aiStudioFileList" class="ai-file-list" aria-live="polite"></div>
     <div id="aiStudioFileStatus" class="ai-studio-muted" aria-live="polite"></div>
     <div class="ai-studio-status" id="aiStudioFormStatus" role="status" aria-live="polite"></div>
@@ -9965,6 +9965,7 @@ html, body { max-width:100%; }
     request("test_gemini").then(live=>showConnection("Connected • "+live.model,"ready")).catch(e=>showConnection("Token saved • Gemini check: "+e.message,"warn"));
    }else showConnection("Connected","ready");
    await Promise.all([loadTasks(),loadMemories(),loadConversations()]);
+   if(conversationId)await openSavedConversation(conversationId).catch(function(){});
    return true;
   }catch(error){
    if(/401|403|unauthori[sz]ed|invalid.*token|token.*invalid/i.test(error.message)){
