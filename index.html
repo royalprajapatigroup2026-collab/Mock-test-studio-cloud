@@ -10338,7 +10338,6 @@ html, body { max-width:100%; }
   if(del){deleteMemory(del.dataset.memoryDelete);return;}
   if(edit){const id=edit.dataset.memoryEdit;request("get_memories").then(function(data){const m=(data.memories||[]).find(function(x){return x.id===id;});if(!m)return;selectedMemoryId=m.id;selectedMemoryKey=m.memory_key;$("aiStudioMemoryKey").value=m.memory_key;$("aiStudioMemoryContent").value=m.content;$("aiStudioMemoryStatus").textContent="Editing: "+m.memory_key;}).catch(function(err){$("aiStudioMemoryStatus").textContent=err.message;});}
  });
- $("aiStudioAdminToken").addEventListener("keydown",function(e){if(e.key==="Enter")connect();});
 })();
 </script>
 
@@ -10609,5 +10608,6 @@ html, body { max-width:100%; }
 }
 </style>
 
+<style id="ai-studio-no-token-ui-v1">#aiStudioAuthPanel[hidden]{display:none!important}</style>
 </body>
 </html>
