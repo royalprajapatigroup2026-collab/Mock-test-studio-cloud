@@ -10271,5 +10271,82 @@ html, body, body *:not(input):not(textarea):not(select):not([contenteditable="tr
 #resultHistoryModal .saved-review-question-nav{position:static!important}
 </style>
 
+
+<style id="bookmark-history-single-scroll-owner-v2">
+/* v2: remove nested question scrollers. The page/modal itself owns vertical scrolling. */
+html:has(body.page-workspace-open),
+body.page-workspace-open{
+ height:auto!important;min-height:100%!important;max-height:none!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:auto!important;
+}
+body.page-workspace-open #bookmarkPracticePage{
+ position:relative!important;inset:auto!important;
+ display:block!important;width:100%!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior: auto!important;
+ touch-action:pan-y!important;
+}
+#bookmarkPracticePage .bookmark-practice-list,
+#bookmarkPracticePage .bookmark-practice-card,
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ position:relative!important;inset:auto!important;
+ display:block!important;width:100%!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ overflow:visible!important;transform:none!important;
+}
+#bookmarkPracticePage .bookmark-practice-scroll,
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll{
+ display:block!important;position:static!important;
+ width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior: auto!important;
+ -webkit-overflow-scrolling:auto!important;touch-action:pan-y!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ box-shadow:var(--card-shadow)!important;z-index:auto!important;
+}
+#bookmarkPracticePage .bookmark-practice-controls{position:static!important}
+
+/* The fixed backdrop is the sole scroll surface for Saved Test Results.
+   Its header, list/review and question content all move as one document. */
+#resultHistoryModal{
+ align-items:flex-start!important;justify-content:flex-start!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y: auto!important;
+ -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+}
+#resultHistoryModal > .history-modal-card,
+#resultHistoryModal > .modal-card.history-modal-card{
+ position:relative!important;inset:auto!important;
+ display:flex!important;flex:0 0 auto!important;
+ flex-direction:column!important;flex-wrap:nowrap!important;
+ width:100%!important;max-width:1440px!important;
+ height:auto!important;min-height:100dvh!important;max-height:none!important;
+ margin:0 auto!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+}
+#resultHistoryModal .modal-head.history-icon-close-head{position:static!important}
+#resultHistoryModal .history-review-page,
+#resultHistoryModal .history-review-questions,
+#resultHistoryModal .history-review-single-question,
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:relative!important;inset:auto!important;
+ display:block!important;width:100%!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ overflow:visible!important;transform:none!important;
+}
+#resultHistoryModal .saved-review-scroll,
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
+ display:block!important;position:static!important;
+ width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+ -webkit-overflow-scrolling:auto!important;touch-action:pan-y!important;
+}
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ box-shadow:var(--card-shadow)!important;z-index:auto!important;
+}
+#resultHistoryModal .saved-review-question-nav{position:static!important}
+</style>
+
 </body>
 </html>
