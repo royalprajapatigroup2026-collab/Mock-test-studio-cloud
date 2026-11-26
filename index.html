@@ -10269,13 +10269,26 @@ html, body { max-width:100%; }
   input.value=message;
   appendChat("user",message);input.value="";
   const target=currentTarget(),intent=parseQuestionRequest(message,target);
-  if(intent.subject&&target.targetSubject&&intent.subject.toLowerCase()!==target.targetSubject.toLowerCase()){appendChat("model","Please select the "+intent.subject+" subject and the required chapter in the main app first. I have not generated or routed questions to a different subject.");return;}
+  const selectedSubjectMatches=!intent.subject||!target.targetSubject||intent.subject.toLowerCase()===target.targetSubject.toLowerCase();
+  const sendButton=$("aiStudioSendBtn");
+  sendButton.disabled=true;
+  sendButton.setAttribute("aria-busy","true");
+  status("Gemini is thinking…","loading");
   try{
-   const data=await request("chat",{message:message,conversation_id:conversationId,generate_questions:intent.generate,requested_count:intent.count,generation_mode:intent.mode,title:intent.title,targetSubject:intent.subject||target.targetSubject,targetChapterId:target.targetChapterId,targetChapterTitle:target.targetChapterTitle,sourceText:attachedFiles.map(f=>"\n\n"+f.name+"\n"+f.text).join("")});
+   const data=await request("chat",{message:message,conversation_id:conversationId,generate_questions:intent.generate,requested_count:intent.count,generation_mode:intent.mode,title:intent.title,targetSubject:intent.subject||target.targetSubject,targetChapterId:selectedSubjectMatches?target.targetChapterId:"",targetChapterTitle:selectedSubjectMatches?target.targetChapterTitle:"",sourceText:attachedFiles.map(f=>"\n\n"+f.name+"\n"+f.text).join("")});
    if(data.conversation&&data.conversation.id){conversationId=data.conversation.id;localStorage.setItem("mts_ai_studio_conversation",conversationId);await loadConversations();}
    if(data.review_task){appendChat("model",data.answer||"Questions are ready. Review before adding them to the selected chapter.");await loadTasks();await previewTask(data.review_task.id);}
    else appendChat("model",data.answer||"");
-  }catch(error){appendChat("model","Error: "+error.message);}
+  }catch(error){
+   const message="I couldn't get a Gemini response. "+String(error&&error.message||error);
+   appendChat("model",message);
+   status(message,"error");
+   if(!input.value.trim())input.value=message===" "? "" : "";
+  }finally{
+   sendButton.disabled=false;
+   sendButton.removeAttribute("aria-busy");
+   sendButton.textContent="➤";
+  }
  }
  function sendComposer(){
   if(studioMode==="chat")return sendChatComposer();
@@ -10304,7 +10317,7 @@ html, body { max-width:100%; }
  $("aiStudioChatModeBtn").addEventListener("click",function(){setStudioMode("chat");if(token())loadConversations().catch(e=>status(e.message,"error"));});
  $("aiStudioNewChatBtn").addEventListener("click",newChat);
  $("aiStudioConversationList").addEventListener("click",function(e){const b=e.target.closest("[data-open-conversation]");if(b)openSavedConversation(b.dataset.openConversation);});
- $("aiStudioSendBtn").addEventListener("click",sendComposer);
+ $("aiStudioSendBtn").addEventListener("click",function(event){event.preventDefault();if(studioMode==="chat")sendChatComposer();else sendComposer();});
  $("aiStudioVoiceBtn").addEventListener("click",startVoiceInput);
  $("aiStudioTasksToggle").addEventListener("click",function(){$("aiStudioTaskPanel").hidden=!$("aiStudioTaskPanel").hidden;$("aiStudioMemoryPanel").hidden=true;if(token())loadTasks().catch(e=>status(e.message,"error"));});
  $("aiStudioMemoryToggle").addEventListener("click",function(){$("aiStudioMemoryPanel").hidden=!$("aiStudioMemoryPanel").hidden;$("aiStudioTaskPanel").hidden=true;if(token())loadMemories().catch(e=>status(e.message,"error"));});
