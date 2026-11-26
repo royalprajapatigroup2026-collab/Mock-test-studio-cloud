@@ -10206,7 +10206,7 @@ html, body { max-width:100%; }
   const bookmarks=document.getElementById("bookmarkPracticePage");
   if(visible(bookmarks)){
    // Device Back exits the bookmark workspace once; do not trigger a second history.back().
-   window.__mockReviewBackHandled=true;
+   if(window.__mockReviewBackFromPopstate)window.__mockReviewBackHandled=true;
    if(typeof window.closeBookmarkPracticePage==="function")window.closeBookmarkPracticePage(true);
    else document.getElementById("bookmarkPracticePage").hidden=true;
    return true;
@@ -10216,13 +10216,13 @@ html, body { max-width:100%; }
    const review=document.getElementById("historyReviewPage");
    if(visible(review)&&typeof window.backToResultHistory==="function"){
     // First Back from a reviewed attempt returns to the saved-results list.
-    window.__mockReviewBackHandled=true;
+    if(window.__mockReviewBackFromPopstate)window.__mockReviewBackHandled=true;
     window.backToResultHistory();
     if(typeof reviewNavLayer!=="undefined")reviewNavLayer="saved-list";
     return true;
    }
    // A second Back closes the saved-results list and returns to its caller.
-   window.__mockReviewBackHandled=true;
+   if(window.__mockReviewBackFromPopstate)window.__mockReviewBackHandled=true;
    if(typeof window.closeResultHistory==="function")window.closeResultHistory(true);
    else historyModal.classList.remove("open");
    if(typeof reviewNavLayer!=="undefined")reviewNavLayer=null;
@@ -10240,9 +10240,11 @@ html, body { max-width:100%; }
   // Existing Test / Study Mode handlers own their specialised Back behaviour.
   if(typeof displayMode!=="undefined"&&(displayMode==="test"||displayMode==="study"))return;
   handling=true;
+  window.__mockReviewBackFromPopstate=true;
   try{backInsideApp();}
   catch(error){console.warn("App Back navigation:",error);}
   finally{
+   window.__mockReviewBackFromPopstate=false;
    pushGuard();
    setTimeout(function(){handling=false;},0);
   }
