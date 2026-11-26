@@ -4680,6 +4680,14 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       <button type="button" class="home-action secondary" id="homeQuestionBankManagerBtn">Question Bank Manager</button>
      </div>
     </div>
+    <section class="home-ai-studio-card" aria-label="Gemini AI Question Studio">
+     <div class="home-ai-studio-icon" aria-hidden="true">✨</div>
+     <div class="home-ai-studio-copy">
+      <h3>Gemini AI Question Studio</h3>
+      <p>Generate UPSC EPFO-level questions, schedule question sets, manage AI tasks and use saved study memory.</p>
+     </div>
+     <button type="button" class="home-ai-studio-launch" id="homeAiQuestionStudioBtn">Open AI Question Studio →</button>
+    </section>
     <section class="home-study-snapshot" id="homeStudySnapshot" aria-label="Study progress snapshot">
      <div class="home-study-snapshot-head">
       <div><h3>Your Study Snapshot</h3><p>Based on saved answers on this device</p></div>
@@ -9726,6 +9734,14 @@ html, body { max-width:100%; }
 
 
 <style id="ai-question-studio-styles">
+.home-ai-studio-card{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0 18px;padding:18px;border:2px solid var(--primary);border-radius:16px;background:linear-gradient(120deg,var(--surface),var(--primary-soft));box-shadow:var(--card-shadow)}
+.home-ai-studio-icon{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:14px;background:var(--primary);color:#fff;font-size:1.55rem}
+.home-ai-studio-copy{flex:1 1 240px;min-width:0}
+.home-ai-studio-copy h3{margin:0 0 5px;font-size:1.02rem;font-weight:950;color:var(--text)}
+.home-ai-studio-copy p{margin:0;color:var(--muted);font-size:.8rem;line-height:1.5}
+.home-ai-studio-launch{flex:0 1 auto;min-height:42px;padding:10px 15px;border:1px solid var(--primary);border-radius:11px;background:var(--primary);color:#fff;font:inherit;font-size:.82rem;font-weight:900;cursor:pointer}
+.home-ai-studio-launch:active{transform:translateY(1px)}
+@media(max-width:600px){.home-ai-studio-card{align-items:flex-start;padding:14px}.home-ai-studio-launch{width:100%;flex-basis:100%}}
 .ai-studio-open-btn{border-color:var(--primary)!important;color:var(--primary)!important;font-weight:900!important}
 #aiQuestionStudioModal{position:fixed;inset:0;z-index:9900;background:rgba(4,9,25,.72);display:flex;align-items:center;justify-content:center;padding:14px}
 #aiQuestionStudioModal[hidden]{display:none!important}
@@ -10079,6 +10095,8 @@ html, body { max-width:100%; }
   if(pollHandle){clearInterval(pollHandle);pollHandle=null;}
  }
  $("aiStudioOpenBtn").addEventListener("click",openModal);
+ const homeAiStudioBtn=$("homeAiQuestionStudioBtn");
+ if(homeAiStudioBtn)homeAiStudioBtn.addEventListener("click",openModal);
  $("aiStudioCloseBtn").addEventListener("click",closeModal);
  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
  $("aiStudioConnectBtn").addEventListener("click",connect);
