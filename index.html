@@ -9905,6 +9905,13 @@ html, body { max-width:100%; }
  const AI_STUDIO_ANON_JWT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
  const modal=document.getElementById("aiQuestionStudioModal");
  const $=function(id){return document.getElementById(id);};
+ // Local HTML escaping: the AI Studio runs in its own IIFE and cannot see helpers
+ // declared inside the main app's separate script scope.
+ function escapeHtml(value){
+  return String(value==null?"":value).replace(/[&<>"']/g,function(ch){
+   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+  });
+ }
  let pollHandle=null;
  let seenPublished="";
  let attachedFiles=[];
