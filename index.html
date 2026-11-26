@@ -7770,6 +7770,14 @@ $("questionCard").addEventListener("click", e => {
  const cs = getSessionState(sess);
  if(cs.submitted) return;
 
+ const answerScrollSnapshot={windowY:window.scrollY||0,cardTop:$("questionCard")?$("questionCard").scrollTop:0,workspaceTop:$("mockWorkspace")?$("mockWorkspace").scrollTop:0,bodyTop:document.scrollingElement?document.scrollingElement.scrollTop:0};
+ const restoreAnswerScroll=()=>requestAnimationFrame(()=>{
+  const card=$("questionCard"),workspace=$("mockWorkspace");
+  if(card)card.scrollTop=answerScrollSnapshot.cardTop;
+  if(workspace)workspace.scrollTop=answerScrollSnapshot.workspaceTop;
+  if(document.scrollingElement)document.scrollingElement.scrollTop=answerScrollSnapshot.bodyTop;
+  window.scrollTo({top:answerScrollSnapshot.windowY,left:0,behavior:"instant"});
+ });
  const letter = optBtn.dataset.opt;
  lastOptKey = "";
  lastOptTime = 0;
@@ -7782,6 +7790,7 @@ $("questionCard").addEventListener("click", e => {
   solutionPanelOpen = letter !== currentQ.answer;
   saveState();
   renderQuestion("");
+  restoreAnswerScroll();
  } else {
   /* Final Submit Mode: single click selects option (or toggles off if same option clicked again) */
   if(cs.answers[cs.currentIdx] === letter){
@@ -9309,7 +9318,7 @@ async function qbReceiveSharedJsonFile(){
  const params=new URLSearchParams(location.search);
  if(params.get("shared")!=="1")return;
  try{
-  const cache=await caches.open("mock-test-studio-v17");
+  const cache=await caches.open("mock-test-studio-v18");
   const key=new Request(new URL("__share_target_file__",location.origin).toString());
   const response=await cache.match(key);
   if(!response)throw new Error("The shared file could not be found. Please share it again.");
@@ -9438,13 +9447,17 @@ if(state.exitedTestKey){
 })();
 </script>
 
-<script>
-/* PWA service-worker registration. Requires HTTPS hosting (or localhost). */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
-      .catch(err => console.warn("PWA service worker registration failed:", err));
-  });
+<script id="pwa-auto-update-v2">
+/* Check for updates automatically without reloading or interrupting active sessions. */
+if("serviceWorker" in navigator){
+ window.addEventListener("load",async()=>{
+  try{
+   const registration=await navigator.serviceWorker.register("./service-worker.js",{scope:"./",updateViaCache:"none"});
+   const check=()=>{if(!document.hidden)registration.update().catch(()=>{});};
+   check();document.addEventListener("visibilitychange",check);window.addEventListener("pageshow",check);
+   window.setInterval(check,20*60*1000);
+  }catch(err){console.warn("PWA service worker registration failed:",err);}
+ });
 }
 </script>
 
@@ -10175,5 +10188,27 @@ html, body, body *:not(input):not(textarea):not(select):not([contenteditable="tr
  },true);
 })();
 </script>
+
+<style id="disable-pull-to-refresh-v2">html,body{overscroll-behavior-y:none!important;overscroll-behavior:none!important}</style>
+<script id="resume-exact-scroll-position-v2">
+(function(){
+ "use strict";const KEY="mtsExactUiScrollPositionV2";let queued=false;
+ function snapshot(){
+  try{const positions={};document.querySelectorAll("[id]").forEach(el=>{const s=getComputedStyle(el);if(el.scrollHeight>el.clientHeight+4&&(s.overflowY==="auto"||s.overflowY==="scroll"))positions[el.id]=el.scrollTop;});
+   localStorage.setItem(KEY,JSON.stringify({x:window.scrollX||0,y:window.scrollY||0,positions,at:Date.now()}));
+  }catch(_){}
+ }
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;snapshot();});}
+ function restore(){try{const d=JSON.parse(localStorage.getItem(KEY)||"null");if(!d||Date.now()-Number(d.at||0)>2592000000)return;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{Object.entries(d.positions||{}).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&Number.isFinite(Number(v)))el.scrollTop=Number(v);});window.scrollTo({left:Number(d.x)||0,top:Number(d.y)||0,behavior:"instant"});}));
+ }catch(_){}}
+ window.addEventListener("scroll",schedule,{passive:true});document.addEventListener("scroll",schedule,{passive:true,capture:true});
+ window.addEventListener("pagehide",snapshot);window.addEventListener("beforeunload",snapshot);
+ document.addEventListener("visibilitychange",()=>{if(document.hidden)snapshot();});
+ window.addEventListener("pageshow",restore);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",restore,{once:true});else restore();
+})();
+</script>
+
 </body>
 </html>
