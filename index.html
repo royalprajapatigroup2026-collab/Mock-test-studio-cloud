@@ -10811,16 +10811,21 @@ body.page-workspace-open #bookmarkPracticePage{
 #homeDashboard .home-home-shortcut{
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:100%!important;min-width:0!important;min-height:76px!important;padding:16px 12px!important;
- border:1px solid var(--border-strong)!important;border-radius:15px!important;
- background:var(--surface)!important;color:var(--text)!important;
+ border:1px solid transparent!important;border-radius:15px!important;
  box-shadow:var(--card-shadow)!important;font:inherit!important;font-size:clamp(.88rem,2.4vw,1rem)!important;
  font-weight:900!important;text-align:center!important;cursor:pointer!important;
- transition:border-color .15s ease,transform .15s ease,background .15s ease!important;
+ transition:filter .15s ease,transform .15s ease,box-shadow .15s ease!important;
 }
-#homeDashboard .home-home-shortcut:hover{
- border-color:var(--primary)!important;background:var(--primary-soft,var(--surface))!important;
+#homeDashboard #homeViewAllBookmarksBtn{
+ background:linear-gradient(135deg,#0f9f78 0%,#087f8c 100%)!important;
+ border-color:#087f8c!important;color:#fff!important;
 }
-#homeDashboard .home-home-shortcut:active{transform:scale(.985)!important}
+#homeDashboard #homeViewAllResultsBtn{
+ background:linear-gradient(135deg,#5965e8 0%,#753bd4 100%)!important;
+ border-color:#5946d5!important;color:#fff!important;
+}
+#homeDashboard .home-home-shortcut:hover{filter:brightness(1.06)!important}
+#homeDashboard .home-home-shortcut:active{transform:scale(.985)!important;filter:brightness(.96)!important}
 @media(max-width:420px){
  #homeDashboard .home-home-shortcuts{grid-template-columns:1fr!important;gap:9px!important}
  #homeDashboard .home-home-shortcut{min-height:62px!important}
