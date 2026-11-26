@@ -10449,5 +10449,58 @@ body.page-workspace-open #bookmarkPracticePage{
 }
 </style>
 
+
+
+<style id="expanded-review-scroll-hard-fix-v1">
+/* Expanded Bookmark Questions + Saved Test Results:
+   constrain the panel to the viewport and give the content area a definite
+   flex scrollport. A zero flex-basis is important on Android WebView: it
+   prevents long question content from expanding the flex child instead of
+   making it scroll. */
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:fixed!important;
+ inset:4px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ width:auto!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow:hidden!important;
+ box-sizing:border-box!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll,
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
+ display:block!important;
+ position:relative!important;
+ flex:1 1 0%!important;
+ width:100%!important;
+ height:0!important;
+ min-height:0!important;
+ max-height:none!important;
+ overflow-x:hidden!important;
+ overflow-y:scroll!important;
+ overscroll-behavior-y:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+ touch-action:pan-y!important;
+ scrollbar-gutter:stable!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-card-head,
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-question-head{
+ flex:0 0 auto!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-controls,
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-question-nav{
+ flex:0 0 auto!important;
+ position:relative!important;
+ bottom:auto!important;
+}
+@media(max-width:600px){
+ #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
+ #resultHistoryModal .history-review-single-question.review-panel-expanded{inset:4px!important}
+}
+</style>
+
 </body>
 </html>
