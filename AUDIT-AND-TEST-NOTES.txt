@@ -1,26 +1,39 @@
-NETLIFY PUBLISHER TEST — AUDIT NOTES
-======================================
+MOCK TEST STUDIO — GITHUB PAGES / SUPABASE AUDIT NOTES
+=========================================================
 
-This branch contains the first safety fixes for the separate test deployment.
+CURRENT ARCHITECTURE
+- Static frontend is maintained in the GitHub repository and intended to be published by GitHub Pages from main /(root).
+- Supabase provides database, Edge Functions, Vault secrets and scheduled task processing.
+- Netlify is not part of the current deployment architecture.
 
-PUBLIC DATA NOTICE
-- GET /api/questions is intentionally a public, read-only feed because the PWA sync client does not send an administrator token.
-- Anyone who knows the test site's URL can read batches published to this feed.
-- Do not publish confidential, paid, unreleased, or otherwise restricted question content.
-- POST publication requires the PUBLISHER_TOKEN stored in Netlify Environment Variables.
+FRONTEND CHECKS
+- index.html contains the AI Question Studio toolbar button and modal.
+- Frontend calls the Supabase Edge Function ai-question-studio.
+- Frontend uses only the Supabase public client key for the published-test read feed and Edge Function request.
+- Gemini API key is not embedded in index.html.
+- service-worker.js cache version is v10 so an older cached app shell is invalidated.
+- .nojekyll is present for static GitHub Pages publishing.
+- Main application and AI Question Studio inline JavaScript passed a syntax check after the latest changes.
+- A live browser session on the user's GitHub Pages domain has not been independently verified in this audit.
 
-SAFETY FIXES
-- Batch creation uses Netlify Blobs setJSON(..., { onlyIfNew: true }) so duplicate batch IDs cannot overwrite an existing batch during concurrent requests.
-- API rejects request bodies larger than 4 MB.
-- _headers uses Netlify's supported path/header syntax.
-- Full Backup now includes the cloud sync batch ledger so restored devices retain their processed-batch history.
-- The old third-party ChatGPT GitHub Action workflow has been removed from this branch. It was not required for the publisher and ran an unpinned external action on pull requests.
+SUPABASE CHECKS
+- public.published_mock_tests remains the existing published test table.
+- RLS is enabled on the private ai_question_tasks, ai_studio_conversations and ai_studio_memories tables; browser roles have no direct policies for those tables.
+- Supabase Edge Function ai-question-studio is ACTIVE.
+- Function reads the Gemini key from Supabase Vault secret "Gemini Api key" via a server-side RPC.
+- Vault lookup returned a non-null key.
+- The health endpoint returned geminiConfigured=true and model gemini-3.8-flash.
+- Cron job ai-studio-task-worker is registered with schedule * * * * *.
+- The cron worker reached the Edge Function and returned HTTP 200 during the no-task check.
+- A full end-to-end Gemini question generation and automatic publication test has not yet been completed.
 
-STILL REQUIRED BEFORE DEPLOYMENT
-- Test API behavior against an actual Netlify test site.
-- Verify publisher authorization, invalid JSON, oversized requests, duplicate batch IDs, and cloud feed behavior.
-- Verify PWA merge/new-subject handling, exact duplicates, conflicting answers, repeated sync, and full backup/restore.
-- Review and test the existing PWA sync code on Android Chrome before using real question banks.
-- Keep main and test branches unchanged until all tests pass.
+IMPORTANT LIMITATIONS
+- GitHub Pages site publishing source and final live URL must be checked in the repository owner's Settings → Pages. Repository file commits alone do not prove a Pages deployment has completed.
+- The current task worker processes one batch of up to 10 questions per minute.
+- Generated questions are automatically published once the task is complete and the shape checks pass. AI content still requires human verification for statutory accuracy.
+- Direct PDF upload is not yet implemented in the current AI Question Studio UI; source text can be pasted into the source-material field.
 
-NO LIVE SITE WAS DEPLOYED OR MODIFIED BY THIS AUDIT FIX BRANCH.
+SECURITY
+- Do not expose Gemini API key, Supabase service-role/secret key, AI Studio admin token or scheduler token in browser code or GitHub.
+- The private task and memory tables must remain protected by RLS.
+- Do not publish confidential question sets.
