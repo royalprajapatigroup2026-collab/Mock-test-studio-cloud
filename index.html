@@ -10275,24 +10275,19 @@ html, body { max-width:100%; }
   modal.hidden=true;
   if(pollHandle){clearInterval(pollHandle);pollHandle=null;}
  }
- $("aiStudioOpenBtn").addEventListener("click",openModal);
+ const homeAiStudioBtn=$("aiStudioOpenBtn");
+ if(homeAiStudioBtn)homeAiStudioBtn.addEventListener("click",openModal);
  const qbAiStudioBtn=$("qbOpenAiStudioBtn");
  if(qbAiStudioBtn)qbAiStudioBtn.addEventListener("click",openModal);
  $("aiStudioCloseBtn").addEventListener("click",closeModal);
  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
  $("aiStudioConnectBtn").addEventListener("click",connect);
- $("aiStudioCreateTaskBtn").addEventListener("click",createTask);
  $("aiStudioTasksRefreshBtn").addEventListener("click",function(){loadTasks().catch(function(e){$("aiStudioFileStatus").textContent=e.message;});});
  $("aiStudioSaveMemoryBtn").addEventListener("click",saveMemory);
  $("aiStudioNewMemoryBtn").addEventListener("click",newMemory);
  $("aiStudioCancelMemoryBtn").addEventListener("click",newMemory);
  $("aiStudioAttachBtn").addEventListener("click",function(){$("aiStudioFiles").click();});
  $("aiStudioFiles").addEventListener("change",function(e){addFiles(e.target.files);});
- const dropArea=$("aiQuestionStudioModal").querySelector(".ai-attach-area");
- ["dragenter","dragover"].forEach(function(type){dropArea.addEventListener(type,function(e){e.preventDefault();dropArea.classList.add("is-dragover");});});
- ["dragleave","drop"].forEach(function(type){dropArea.addEventListener(type,function(e){e.preventDefault();dropArea.classList.remove("is-dragover");});});
- dropArea.addEventListener("drop",function(e){addFiles(e.dataTransfer&&e.dataTransfer.files);});
- $("aiStudioPrompt").addEventListener("input",function(){$("aiPromptCharCount").textContent=this.value.length.toLocaleString()+" characters";});
  $("aiStudioFileList").addEventListener("click",function(e){const btn=e.target.closest("[data-file-remove]");if(!btn)return;attachedFiles.splice(Number(btn.dataset.fileRemove),1);renderAttachedFiles();$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached.";});
  $("aiStudioMemoryList").addEventListener("click",function(e){
   const edit=e.target.closest("[data-memory-edit]"),del=e.target.closest("[data-memory-delete]");
