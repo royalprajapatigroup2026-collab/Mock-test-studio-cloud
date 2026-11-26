@@ -1,51 +1,59 @@
-MOCK TEST STUDIO — PUBLISHER + CLOUD SYNC (TEST PACKAGE)
-=======================================================
+MOCK TEST STUDIO — GITHUB PAGES + SUPABASE SETUP
+==================================================
 
-WHAT THIS PACKAGE ADDS
-- publisher.html: Android-friendly page to paste Gemini JSON, validate, review and approve.
-- netlify/functions/api-questions.mjs: authenticated publishing endpoint and public read-only sync feed.
-- Netlify Blobs: stores each approved batch in cloud storage.
-- Mock Test Studio home: Sync Published Questions button and Publisher link.
-- Sync is additive. It appends approved merge/new records; it does not replace the Question Bank.
-- Existing local question bank, results, bookmarks and settings are not deliberately cleared.
-- Batch IDs prevent the same cloud batch from being imported twice on the same device.
+CURRENT HOSTING ARCHITECTURE
+- Frontend: GitHub Pages (static index.html/PWA files from this repository).
+- Backend: Supabase project cvs obyzmwzcakbtteqol (project ref: cvs obyzmwzcakbtteqol).
+- Database: public.published_mock_tests stores published tests.
+- Gemini connection: Supabase Edge Function ai-question-studio.
+- Gemini API key: stored in Supabase Vault with the secret name "Gemini Api key".
+- Task scheduler: Supabase pg_cron calls the Edge Function worker every minute.
+- Long-term studio data: ai_question_tasks, ai_studio_conversations, ai_studio_memories.
 
-IMPORTANT: THIS IS A TEST DEPLOYMENT PACKAGE
-Do not upload this over your live site as the first step. Deploy it to a separate Netlify test site first. Your existing live site is unchanged by this package.
+NO NETLIFY DEPENDENCY
+Netlify is not used by this release. Do not configure a Netlify site, Netlify Functions, Netlify Blobs, or a Netlify environment variable for this architecture.
 
-REQUIRED NETLIFY DEPLOY METHOD
-Netlify Functions need a build deployment. A simple drag-and-drop static ZIP upload is not sufficient to build these functions.
-Use a Git-connected Netlify site/repository (recommended) or Netlify CLI. Android-only users can create a new empty GitHub repository in the GitHub mobile website, upload the extracted package files to its root, then connect that repository to a NEW Netlify test site.
+GITHUB PAGES
+1. In the GitHub repository, open Settings → Pages.
+2. Configure the publishing source to Deploy from a branch.
+3. Select branch main and folder /(root), then save.
+4. Keep index.html, manifest.json, service-worker.js, icons/, and .nojekyll in the repository root.
+5. New commits to main should be picked up by the GitHub Pages publisher according to its build status.
+6. The PWA service worker cache version is bumped when the app shell changes. When testing updates, close the installed PWA fully and reopen it while online.
 
-SETUP STEPS
-1. Create a NEW GitHub repository for testing. Do not use FactoraStudent2; it is a separate project.
-2. Upload all files/folders in this package to the repository root. Ensure index.html, publisher.html, package.json and netlify.toml are at the root.
-3. In Netlify, create a NEW site by importing that GitHub repository.
-4. Build settings: Publish directory = . ; Functions directory = netlify/functions. The netlify.toml already specifies these values. Leave the build command empty unless Netlify requires one.
-5. In the NEW Netlify test site's Site configuration → Environment variables, add:
-   Key: PUBLISHER_TOKEN
-   Value: create a long random secret (at least 32 random characters).
-   Save, then trigger a fresh deploy so the function receives the variable.
-6. Open https://YOUR-TEST-SITE.netlify.app/publisher.html on Android Chrome.
-7. Paste the PUBLISHER_TOKEN into the Publisher page's token field. Paste a Gemini JSON bank, tap Validate & Preview, choose Merge and type the exact subject name (e.g. Computer Awareness), or choose New subject.
-8. Tick the approval checkbox and tap Approve & Publish to Cloud.
-9. Open the test PWA homepage and tap Sync Published Questions. The app checks the local target and answer conflicts before saving. If questions were added, it reloads to activate them.
+SUPABASE BACKEND
+- Edge Function: ai-question-studio.
+- Function endpoint: https://cvsobyzmwzcakbtteqol.supabase.co/functions/v1/ai-question-studio
+- Function uses a private server-side admin token and a separate scheduler token.
+- Gemini API key is resolved from Supabase Vault. Never put the Gemini key or Supabase service-role/secret key into index.html, GitHub Pages, or any other public file.
+- The browser uses only the Supabase publishable/anon client key for reading the published tests feed and calls the Edge Function with the separate AI Studio access token.
+- Private task, conversation and memory tables have RLS enabled and no anon/authenticated policies. They are accessed by the Edge Function's server-side credentials.
 
-JSON REQUIREMENTS
-- Top level: subject (or name) and chapters array.
-- Each chapter: title and questions array.
-- Each question: question text, options A/B/C/D (all non-empty), and one answer key A/B/C/D.
-- Multiple-correct answer arrays are not supported by this PWA version.
-- Optional fields such as explanation, source, difficulty, tags and verification_note are retained by the app's importer.
+AI QUESTION STUDIO
+- Open the "AI Question Studio" button in the app toolbar.
+- Enter the AI Studio access token in the Unlock / Connect field.
+- Connection check verifies the Vault Gemini key and attempts a live Gemini request.
+- Create a task with a test title, subject, topic, difficulty, number of questions, run time, deadline, instructions and optional source text.
+- A task is processed in batches. Questions must contain a question stem, exactly four options, a zero-based correctAnswer index (0–3), and an explanation.
+- On completion, the generated test is published to public.published_mock_tests with is_published=true.
+- It then appears in the existing Select Subject → Published Online Mock Tests selector.
+- AI-generated labour-law questions must still be verified against the relevant Bare Act, amendments and official sources before exam use.
 
-SAFETY / LIMITATIONS
-- Keep PUBLISHER_TOKEN private. It belongs only in Netlify Environment Variables and the Publisher page password field. Never put it into index.html, GitHub source, a public note, or a chat.
-- The cloud feed is read-only for the PWA; only a request with the secret token can publish.
-- If a batch targets a subject that does not exist on a device, or if duplicate subject names / answer conflicts exist, sync skips that batch and reports the issue. It does not guess.
-- Sync runs when the user taps the button. It does not silently run in the background while the app is closed.
-- Back up Mock Test Studio from its Full Backup feature before testing. Keep the backup file somewhere safe.
-- First test with a small JSON batch (2–5 questions), verify it appears correctly, and test duplicate sync (it should not add the same batch again).
-- Do not replace the original live site until the separate test site passes all checks.
+SUPABASE TABLES
+- public.published_mock_tests: public published mock-test feed (only published rows are readable to anon/authenticated).
+- public.ai_question_tasks: private task queue and generation progress.
+- public.ai_studio_conversations: saved Gemini chat history.
+- public.ai_studio_memories: persistent context supplied to Gemini on later chats and tasks.
 
-ROLLBACK
-The original live site has not been changed by preparing this package. If a test deployment behaves incorrectly, stop using the test site and continue using the original site. Local question data is browser storage scoped to the site's origin; the test site's storage is separate from the original site's storage.
+TROUBLESHOOTING
+- If the AI Studio button is missing, verify that GitHub Pages is publishing the latest main branch commit and refresh the PWA after closing it fully.
+- If Connect reports a token error, use the AI Studio access token configured for this project; do not paste the Gemini API key into the website.
+- If Gemini is not detected, confirm the Vault secret name is "Gemini Api key".
+- If a task stays scheduled, check that the Supabase cron job ai-studio-task-worker is active.
+- If a task fails, inspect its last_error in Task Manager and Supabase Edge Function logs.
+- If a generated test does not appear immediately, refresh the Published Online Mock Tests selector after task status becomes completed.
+
+SECURITY
+- Never commit Gemini API keys, service-role keys, Supabase secret keys, AI Studio admin tokens, or scheduler tokens to GitHub.
+- Do not publish confidential, paid or unreleased question content.
+- Treat AI-generated statutory facts as draft material until independently verified.
