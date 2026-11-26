@@ -51,8 +51,21 @@
         {
           "name": "files",
           "accept": [
-            "application/json",
-            ".json"
+            "*/*",
+            ".json",
+            ".pdf",
+            ".txt",
+            ".md",
+            ".csv",
+            ".docx",
+            ".xlsx",
+            ".pptx",
+            ".rtf",
+            ".html",
+            ".xml",
+            ".jpg",
+            ".jpeg",
+            ".png"
           ]
         }
       ]
