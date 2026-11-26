@@ -4752,12 +4752,16 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
  <!-- Bookmark Practice is a standalone workspace; it must not be nested inside .reader,
       because .reader is intentionally hidden while page-workspace-open is active. -->
  <section id="bookmarkPracticePage" class="bookmark-practice-page" hidden aria-label="Bookmarked Questions Practice">
-  <header class="bookmark-practice-header bookmark-practice-review-header" aria-label="Bookmarked Questions Practice">
-   <div class="bookmark-practice-count-indicator" aria-label="Number of bookmarked questions">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-    <span id="bookmarkPracticeCount" aria-live="polite">0</span>
+  <header class="bookmark-practice-header bookmark-practice-review-header compact-review-header" aria-label="Bookmarked Questions Practice">
+   <div class="compact-header-details-wrap">
+    <button type="button" class="history-details-trigger bookmark-details-trigger" id="bookmarkPracticeDetailsBtn" aria-expanded="false" aria-controls="bookmarkPracticeDetailsPopup" title="Bookmark details">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="19" r="1.5"/></svg>
+    </button>
+    <div class="history-details-popup bookmark-details-popup" id="bookmarkPracticeDetailsPopup" hidden>
+     <div class="history-details-popup-title">Bookmark Details</div>
+     <div class="bookmark-details-count"><strong id="bookmarkPracticeCount" aria-live="polite">0</strong><span>Bookmarked Questions</span></div>
+    </div>
    </div>
-   <h2 class="bookmark-practice-header-title">BOOKMARKED QUESTIONS</h2>
    <button type="button" class="bookmark-practice-close" id="bookmarkPracticeCloseBtn" aria-label="Close bookmarked practice" title="Close">×</button>
   </header>
   <div id="bookmarkPracticeList" class="bookmark-practice-list"></div>
@@ -4967,18 +4971,10 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
 <!-- Saved Test Results History -->
 <div class="modal-backdrop" id="resultHistoryModal" role="dialog" aria-modal="true" aria-label="Saved Test Results">
  <div class="modal-card wide history-modal-card">
-  <div class="modal-head history-icon-close-head">
-   <svg class="history-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
-   <h3 class="history-header-title" id="resultHistoryTitle">SAVED TEST RESULTS</h3>
-   <button type="button" class="act-btn history-page-close" id="closeResultHistoryBtn" aria-label="Close Saved Test Results" title="Close">×</button>
-  </div>
-  <div class="history-summary" id="historySummary"></div>
-  <div class="history-list" id="resultHistoryList"></div>
-  <section class="history-review-page" id="historyReviewPage" hidden>
-   <div class="history-review-toolbar">
+  <div class="modal-head history-icon-close-head compact-review-header">
+   <div class="compact-header-details-wrap">
     <button type="button" class="history-details-trigger" id="historyReviewDetailsBtn" aria-expanded="false" aria-controls="historyReviewDetailsPopup" title="Question details and filters">
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="19" r="1.5"/></svg>
-     <span>Details</span>
     </button>
     <div class="history-details-popup" id="historyReviewDetailsPopup" hidden>
      <div class="history-details-popup-title">Test Summary &amp; Question Filters</div>
@@ -4986,6 +4982,12 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
      <div class="history-review-filters" id="historyReviewFilters" role="toolbar" aria-label="Filter saved questions"></div>
     </div>
    </div>
+   <button type="button" class="act-btn history-page-close" id="closeResultHistoryBtn" aria-label="Close Saved Test Results" title="Close">×</button>
+  </div>
+  <div class="history-summary" id="historySummary"></div>
+  <div class="history-list" id="resultHistoryList"></div>
+  <section class="history-review-page" id="historyReviewPage" hidden>
+
    <div class="history-review-questions" id="historyReviewQuestions"></div>
   </section>
  </div>
@@ -10563,6 +10565,69 @@ body.page-workspace-open #bookmarkPracticePage{
 #resultHistoryModal .history-details-popup .history-filter-chip.active{background:var(--primary-soft)!important;color:var(--primary)!important;border-color:var(--primary)!important}
 #resultHistoryModal .history-details-popup .history-filter-chip span{flex:0 0 auto!important}
 #resultHistoryModal .history-review-summary[hidden],#resultHistoryModal .history-review-filters[hidden]{display:none!important}
+</style>
+
+
+
+<style id="minimal-review-headers-light-red-close-v1">
+/* Minimal headers shared by Saved Test Results and Bookmarked Questions. */
+#resultHistoryModal .history-icon-close-head,
+#bookmarkPracticePage .bookmark-practice-review-header{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;min-height:46px!important;margin:0 0 14px!important;padding:0!important;
+ border:0!important;border-radius:0!important;background:transparent!important;background-color:transparent!important;
+ box-shadow:none!important;position:relative!important;z-index:30!important;
+}
+#resultHistoryModal .history-header-icon,
+#resultHistoryModal .history-header-title,
+#bookmarkPracticePage .bookmark-practice-count-indicator,
+#bookmarkPracticePage .bookmark-practice-header-title{display:none!important}
+#resultHistoryModal .history-details-trigger,
+#bookmarkPracticePage .history-details-trigger{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+ padding:0!important;border:1px solid var(--border-strong)!important;border-radius:11px!important;
+ background:var(--surface)!important;color:var(--text)!important;box-shadow:0 2px 8px rgba(15,23,42,.10)!important;
+ cursor:pointer!important;
+}
+#resultHistoryModal .history-details-trigger svg,
+#bookmarkPracticePage .history-details-trigger svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#resultHistoryModal #closeResultHistoryBtn,
+#bookmarkPracticePage #bookmarkPracticeCloseBtn{
+ order:2!important;flex:0 0 42px!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:0!important;
+ border:1px solid #fecaca!important;border-radius:11px!important;
+ background:#fff5f5!important;background-color:#fff5f5!important;color:#ef4444!important;
+ box-shadow:none!important;font-size:1.7rem!important;line-height:1!important;cursor:pointer!important;
+}
+#resultHistoryModal #closeResultHistoryBtn:hover,
+#bookmarkPracticePage #bookmarkPracticeCloseBtn:hover{
+ background:#fee2e2!important;color:#dc2626!important;border-color:#fca5a5!important;
+}
+#resultHistoryModal .compact-header-details-wrap,
+#bookmarkPracticePage .compact-header-details-wrap{position:relative!important;display:inline-flex!important;align-items:center!important;z-index:100!important}
+#resultHistoryModal .history-details-popup,
+#bookmarkPracticePage .bookmark-details-popup{
+ position:absolute!important;top:calc(100% + 7px)!important;left:0!important;right:auto!important;z-index:100000!important;
+ width:min(360px,calc(100vw - 36px))!important;max-width:calc(100vw - 36px)!important;
+ max-height:min(68dvh,540px)!important;overflow-x:hidden!important;overflow-y:auto!important;
+ padding:13px!important;box-sizing:border-box!important;border:1px solid var(--border-strong)!important;
+ border-radius:15px!important;background:var(--surface)!important;background-color:var(--surface)!important;
+ color:var(--text)!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ box-shadow:0 14px 38px rgba(15,23,42,.24)!important;
+}
+#resultHistoryModal .history-details-popup[hidden],
+#bookmarkPracticePage .bookmark-details-popup[hidden]{display:none!important}
+#resultHistoryModal .history-details-popup-title,
+#bookmarkPracticePage .history-details-popup-title{margin:0 0 10px!important;font-size:.83rem!important;font-weight:900!important;color:var(--text)!important}
+#resultHistoryModal .history-details-popup .history-review-summary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin:0 0 11px!important}
+#resultHistoryModal .history-details-popup .history-review-filters{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:5px!important;margin:0!important;padding:0!important;border:0!important}
+#resultHistoryModal .history-details-popup .history-filter-chip{display:flex!important;justify-content:space-between!important;align-items:center!important;width:100%!important;min-height:38px!important;padding:8px 10px!important;border-radius:9px!important;font-size:.77rem!important;white-space:normal!important;text-align:left!important}
+#resultHistoryModal .history-details-popup .history-filter-chip.active{background:var(--primary-soft)!important;color:var(--primary)!important;border-color:var(--primary)!important}
+#bookmarkPracticePage .bookmark-details-count{display:flex!important;align-items:center!important;gap:12px!important;padding:10px!important;border-radius:10px!important;background:var(--surface-alt)!important;color:var(--text)!important}
+#bookmarkPracticePage .bookmark-details-count strong{font-size:1.35rem!important;font-weight:900!important;color:var(--primary)!important}
+#bookmarkPracticePage .bookmark-details-count span{font-size:.8rem!important;font-weight:800!important}
+#resultHistoryModal .history-review-toolbar{display:none!important}
 </style>
 
 </body>
