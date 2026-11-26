@@ -10492,5 +10492,95 @@ html, body { max-width:100%; }
 }
 </style>
 
+
+<style id="ai-studio-chat-layout-v3">
+/* Chat-first layout: transcript above a compact, fixed composer */
+#aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,300px);
+ align-items:stretch;gap:14px;overflow:hidden;min-height:0;
+}
+#aiQuestionStudioModal .ai-composer-pane{
+ display:flex;flex-direction:column;min-height:0;height:100%;
+ padding:14px;border-radius:18px;overflow:hidden;
+}
+#aiQuestionStudioModal .ai-studio-chat-log{
+ flex:1 1 auto;min-height:220px;height:auto;max-height:none;overflow-y:auto;
+ padding:12px;margin:0 0 8px;border:0;background:transparent;
+}
+#aiQuestionStudioModal .ai-composer-mode-row{
+ flex:0 0 auto;display:flex;justify-content:center;align-items:center;
+ margin:0 0 8px;padding:0;
+}
+#aiQuestionStudioModal .ai-mode-switch{
+ margin:0 auto;gap:3px;padding:3px;border-radius:999px;
+}
+#aiQuestionStudioModal .ai-mode-switch button{min-width:72px;padding:8px 18px}
+#aiQuestionStudioModal .ai-composer-bar{
+ flex:0 0 auto;display:flex;align-items:center;gap:10px;
+ min-height:72px;margin:0;padding:9px 12px;border:0;border-radius:999px;
+ background:#191919;box-shadow:0 2px 12px rgba(0,0,0,.12);
+}
+#aiQuestionStudioModal .ai-composer-icon{
+ width:44px;height:44px;flex:0 0 44px;border-radius:50%;
+ background:transparent;color:#f4f4f4;font-size:1.55rem;
+}
+#aiQuestionStudioModal .ai-attach-icon{font-size:2rem;font-weight:300}
+#aiQuestionStudioModal .ai-voice-icon{font-size:1.25rem}
+#aiQuestionStudioModal .ai-send-icon{
+ width:54px;height:54px;flex-basis:54px;border-radius:50%;
+ background:var(--primary);color:#fff;font-size:1.55rem;
+}
+#aiQuestionStudioModal .ai-prompt-editor{
+ flex:1 1 auto;width:0;min-width:0;min-height:44px!important;height:44px;
+ max-height:120px;resize:none;overflow-y:auto;padding:10px 4px;
+ border:0!important;border-radius:0!important;background:transparent!important;
+ color:#fff!important;font-size:1rem;line-height:1.45;outline:none;
+}
+#aiQuestionStudioModal .ai-prompt-editor::placeholder{color:#aaa;opacity:1}
+#aiQuestionStudioModal .ai-studio-side{
+ display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;
+}
+#aiQuestionStudioModal .ai-history-pane{
+ display:flex;flex:1 1 auto;flex-direction:column;min-height:220px;
+ overflow:hidden;padding:14px;border-radius:18px;
+}
+#aiQuestionStudioModal .ai-conversation-list{
+ flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;
+ display:flex;flex-direction:column;gap:7px;padding:2px;
+}
+#aiQuestionStudioModal .ai-conversation-item{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ width:100%;padding:10px 11px;border:1px solid var(--border);
+ border-radius:11px;background:var(--surface-alt);color:var(--text);
+ text-align:left;cursor:pointer;
+}
+#aiQuestionStudioModal .ai-conversation-item span{
+ min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ font-size:.82rem;font-weight:750;
+}
+#aiQuestionStudioModal .ai-conversation-item small{
+ flex:0 0 auto;color:var(--muted);font-size:.66rem;
+}
+#aiQuestionStudioModal .ai-conversation-item.active{
+ border-color:var(--primary);background:var(--primary-soft);
+}
+#aiQuestionStudioModal .ai-studio-auth[hidden]{display:none!important}
+#aiQuestionStudioModal .ai-studio-chat-log .ai-chat-msg{max-width:min(88%,780px)}
+@media(max-width:800px){
+ #aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{
+  grid-template-columns:minmax(0,1fr);overflow-y:auto;align-content:start;
+ }
+ #aiQuestionStudioModal .ai-composer-pane{height:auto;min-height:430px;overflow:visible}
+ #aiQuestionStudioModal .ai-studio-chat-log{min-height:260px;max-height:48vh}
+ #aiQuestionStudioModal .ai-studio-side{height:auto;overflow:visible}
+ #aiQuestionStudioModal .ai-history-pane{min-height:150px;max-height:240px}
+ #aiQuestionStudioModal .ai-conversation-list{max-height:180px}
+ #aiQuestionStudioModal .ai-composer-bar{min-height:64px;gap:5px;padding:6px 8px}
+ #aiQuestionStudioModal .ai-composer-icon{width:38px;height:38px;flex-basis:38px}
+ #aiQuestionStudioModal .ai-send-icon{width:46px;height:46px;flex-basis:46px}
+ #aiQuestionStudioModal .ai-prompt-editor{font-size:.94rem}
+}
+</style>
+
 </body>
 </html>
