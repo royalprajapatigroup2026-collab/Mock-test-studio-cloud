@@ -14,8 +14,14 @@ import java.io.ByteArrayOutputStream
 class MainActivity : Activity() {
     private lateinit var webView: WebView
     private var pendingName: String? = null
+    private var pendingMime: String? = null
     private var pendingBase64: String? = null
-    private val appUrl = "https://mock-test-studio-cloud.netlify.app/"
+    private var pageReady = false
+
+    // GitHub Pages is the current production host for the PWA.
+    private val appUrl = "https://royalprajapatigroup2026-collab.github.io/Mock-test-studio-cloud/"
+    private val maxSharedBytes = 25L * 1024L * 1024L
+    private val cacheName = "mock-test-studio-v15"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +33,7 @@ class MainActivity : Activity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                pageReady = true
                 deliverPendingFile()
             }
         }
@@ -38,67 +45,120 @@ class MainActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handleIntent(intent)
-        if (::webView.isInitialized && webView.url != null) deliverPendingFile()
+        if (::webView.isInitialized && pageReady) {
+            webView.post { deliverPendingFile() }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun extractSharedUri(intent: Intent): Uri? {
+        return when (intent.action) {
+            Intent.ACTION_SEND -> {
+                (intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri)
+                    ?: intent.clipData?.getItemAt(0)?.uri
+                    ?: intent.data
+            }
+            Intent.ACTION_VIEW -> intent.data ?: intent.clipData?.getItemAt(0)?.uri
+            Intent.ACTION_SEND_MULTIPLE -> {
+                intent.clipData?.getItemAt(0)?.uri
+                    ?: intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.firstOrNull()
+            }
+            else -> null
+        }
     }
 
     private fun handleIntent(intent: Intent?) {
         if (intent == null) return
-        val uri: Uri? = when (intent.action) {
-            Intent.ACTION_SEND -> {
-                @Suppress("DEPRECATION")
-                (intent.getParcelableExtra(Intent.EXTRA_STREAM) as? Uri)
-                    ?: intent.clipData?.getItemAt(0)?.uri
-            }
-            Intent.ACTION_VIEW -> intent.data
-            else -> null
-        }
-        if (uri == null) return
+        val uri = extractSharedUri(intent) ?: return
         try {
-            val name = queryName(uri) ?: "questions.json"
-            if (!name.lowercase().endsWith(".json")) {
-                Toast.makeText(this, "Please select a .json question file", Toast.LENGTH_LONG).show()
-                return
-            }
-            val input = contentResolver.openInputStream(uri) ?: throw IllegalStateException("Cannot read file")
+            val name = queryName(uri) ?: "shared-file"
+            val mime = contentResolver.getType(uri) ?: guessMimeFromName(name)
+            val input = contentResolver.openInputStream(uri)
+                ?: throw IllegalStateException("Android could not read the selected file.")
             val output = ByteArrayOutputStream()
-            input.use { stream -> stream.copyTo(output) }
-            val bytes = output.toByteArray()
-            if (bytes.size > 10 * 1024 * 1024) throw IllegalArgumentException("JSON file is larger than 10 MB")
+            input.use { stream ->
+                val buffer = ByteArray(8192)
+                var total = 0L
+                while (true) {
+                    val count = stream.read(buffer)
+                    if (count < 0) break
+                    total += count
+                    if (total > maxSharedBytes) {
+                        throw IllegalArgumentException("The shared file is larger than 25 MB.")
+                    }
+                    output.write(buffer, 0, count)
+                }
+            }
             pendingName = name
-            pendingBase64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            pendingMime = mime
+            pendingBase64 = Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
         } catch (e: Exception) {
-            Toast.makeText(this, "Could not open JSON: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Could not receive file: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun guessMimeFromName(name: String): String {
+        return when (name.substringAfterLast('.', "").lowercase()) {
+            "json" -> "application/json"
+            "pdf" -> "application/pdf"
+            "txt", "md", "csv" -> "text/plain"
+            "html", "htm" -> "text/html"
+            "xml" -> "application/xml"
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            else -> "application/octet-stream"
         }
     }
 
     private fun queryName(uri: Uri): String? {
         if (uri.scheme == "file") return uri.lastPathSegment
-        contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
-            if (it.moveToFirst()) return it.getString(0)
+        contentResolver.query(
+            uri,
+            arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (index >= 0) return cursor.getString(index)
+            }
         }
         return null
     }
 
     private fun deliverPendingFile() {
         val name = pendingName ?: return
+        val mime = pendingMime ?: "application/octet-stream"
         val data = pendingBase64 ?: return
         val safeName = org.json.JSONObject.quote(name)
+        val safeMime = org.json.JSONObject.quote(mime)
         val safeData = org.json.JSONObject.quote(data)
+        val safeCache = org.json.JSONObject.quote(cacheName)
         val script = """
             (async function() {
               try {
                 const bytes = Uint8Array.from(atob($safeData), c => c.charCodeAt(0));
-                const blob = new Blob([bytes], {type:'application/json'});
-                const cache = await caches.open('mock-test-studio-v8');
-                const key = new Request(new URL('__share_target_file__', location.origin + location.pathname.replace(/[^/]*$/, '')).toString());
-                const headers = new Headers({'Content-Type':'application/json','x-share-filename':$safeName});
+                const blob = new Blob([bytes], {type:$safeMime});
+                const cache = await caches.open($safeCache);
+                const baseUrl = new URL('./', location.href);
+                const key = new Request(new URL('__share_target_file__', baseUrl).toString());
+                const headers = new Headers({'Content-Type':$safeMime,'x-share-filename':$safeName});
                 await cache.put(key, new Response(blob, {headers}));
-                location.href = location.pathname + '?shared=1';
-              } catch (e) { alert('JSON import handoff failed: ' + e); }
+                const destination = new URL('./', location.href);
+                destination.searchParams.set('shared', '1');
+                location.replace(destination.toString());
+              } catch (e) {
+                alert('File handoff to Mock Test Studio failed: ' + e);
+              }
             })();
         """.trimIndent()
         webView.evaluateJavascript(script, null)
         pendingName = null
+        pendingMime = null
         pendingBase64 = null
     }
 }
