@@ -4976,10 +4976,16 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
   <div class="history-list" id="resultHistoryList"></div>
   <section class="history-review-page" id="historyReviewPage" hidden>
    <div class="history-review-toolbar">
-    <button type="button" class="act-btn" id="historyReviewBackBtn">← Back to results</button>
+    <button type="button" class="history-details-trigger" id="historyReviewDetailsBtn" aria-expanded="false" aria-controls="historyReviewDetailsPopup" title="Question details and filters">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="19" r="1.5"/></svg>
+     <span>Details</span>
+    </button>
+    <div class="history-details-popup" id="historyReviewDetailsPopup" hidden>
+     <div class="history-details-popup-title">Test Summary &amp; Question Filters</div>
+     <div class="history-review-summary" id="historyReviewSummary"></div>
+     <div class="history-review-filters" id="historyReviewFilters" role="toolbar" aria-label="Filter saved questions"></div>
+    </div>
    </div>
-   <div class="history-review-summary" id="historyReviewSummary"></div>
-   <div class="history-review-filters" id="historyReviewFilters" role="toolbar" aria-label="Filter saved questions"></div>
    <div class="history-review-questions" id="historyReviewQuestions"></div>
   </section>
  </div>
@@ -7108,12 +7114,23 @@ $("resultHistoryList").addEventListener("click", e => {
   renderResultHistory();
  }
 });
-$("historyReviewBackBtn").addEventListener("click", backToResultHistory);
+$("historyReviewDetailsBtn").addEventListener("click", () => {
+ const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
+ const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
+});
+$("resultHistoryModal").addEventListener("click", e => {
+ const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
+ if(!popup||popup.hidden||e.target.closest("#historyReviewDetailsPopup")||e.target.closest("#historyReviewDetailsBtn"))return;
+ popup.hidden=true;if(btn)btn.setAttribute("aria-expanded","false");
+});
 $("historyReviewFilters").addEventListener("click", e => {
  const chip = e.target.closest("[data-history-filter]");
  if(!chip) return;
  activeHistoryFilter = chip.dataset.historyFilter || "all";
  activeHistoryReviewPosition=0;
+ const detailsPopup=$("historyReviewDetailsPopup"),detailsBtn=$("historyReviewDetailsBtn");
+ if(detailsPopup)detailsPopup.hidden=true;
+ if(detailsBtn)detailsBtn.setAttribute("aria-expanded","false");
  const current = loadResultHistory().find(x => x.id === activeHistoryAttemptId);
  if(current) renderSavedAttemptReview(current);
 });
@@ -10500,6 +10517,52 @@ body.page-workspace-open #bookmarkPracticePage{
  #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
  #resultHistoryModal .history-review-single-question.review-panel-expanded{inset:4px!important}
 }
+</style>
+
+
+
+<style id="saved-review-compact-details-popup-v1">
+#resultHistoryModal .history-review-toolbar{
+ position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ min-height:42px!important;margin:0 0 10px!important;padding:0!important;border:0!important;z-index:120!important;
+}
+#resultHistoryModal .history-details-trigger{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+ min-width:44px!important;min-height:42px!important;padding:8px 13px!important;
+ border:1px solid var(--border-strong)!important;border-radius:12px!important;
+ background:var(--surface)!important;color:var(--text)!important;box-shadow:0 2px 8px rgba(15,23,42,.10)!important;
+ font:inherit!important;font-size:.82rem!important;font-weight:850!important;cursor:pointer!important;
+}
+#resultHistoryModal .history-details-trigger svg{width:19px!important;height:19px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#resultHistoryModal .history-details-trigger[aria-expanded="true"]{border-color:var(--primary)!important;color:var(--primary)!important;background:var(--primary-soft)!important}
+#resultHistoryModal .history-details-popup{
+ position:absolute!important;top:calc(100% + 7px)!important;right:0!important;left:auto!important;z-index:100000!important;
+ width:min(360px,calc(100vw - 36px))!important;max-width:calc(100vw - 36px)!important;
+ max-height:min(68dvh,540px)!important;overflow-x:hidden!important;overflow-y:auto!important;
+ padding:13px!important;box-sizing:border-box!important;border:1px solid var(--border-strong)!important;border-radius:15px!important;
+ background:var(--surface)!important;color:var(--text)!important;opacity:1!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 14px 38px rgba(15,23,42,.24)!important;
+}
+#resultHistoryModal .history-details-popup[hidden]{display:none!important}
+#resultHistoryModal .history-details-popup-title{margin:0 0 10px!important;font-size:.83rem!important;font-weight:900!important;color:var(--text)!important}
+#resultHistoryModal .history-details-popup .history-review-summary{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin:0 0 11px!important;
+}
+#resultHistoryModal .history-details-popup .history-review-stat{min-width:0!important;padding:8px 6px!important;border-radius:10px!important;background:var(--surface-alt)!important;opacity:1!important}
+#resultHistoryModal .history-details-popup .history-review-stat strong{font-size:1rem!important}
+#resultHistoryModal .history-details-popup .history-review-stat span{font-size:.64rem!important}
+#resultHistoryModal .history-details-popup .history-review-filters{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:5px!important;
+ margin:0!important;padding:0!important;border:0!important;
+}
+#resultHistoryModal .history-details-popup .history-filter-chip{
+ display:flex!important;justify-content:space-between!important;align-items:center!important;width:100%!important;
+ min-height:38px!important;padding:8px 10px!important;border-radius:9px!important;background:var(--surface)!important;
+ font-size:.77rem!important;white-space:normal!important;text-align:left!important;
+}
+#resultHistoryModal .history-details-popup .history-filter-chip.active{background:var(--primary-soft)!important;color:var(--primary)!important;border-color:var(--primary)!important}
+#resultHistoryModal .history-details-popup .history-filter-chip span{flex:0 0 auto!important}
+#resultHistoryModal .history-review-summary[hidden],#resultHistoryModal .history-review-filters[hidden]{display:none!important}
 </style>
 
 </body>
