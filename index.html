@@ -7120,6 +7120,15 @@ $("historyReviewDetailsBtn").addEventListener("click", () => {
  const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
  const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
 });
+$("bookmarkPracticeDetailsBtn").addEventListener("click", () => {
+ const popup=$("bookmarkPracticeDetailsPopup"),btn=$("bookmarkPracticeDetailsBtn");
+ const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
+});
+$("bookmarkPracticePage").addEventListener("click", e => {
+ const popup=$("bookmarkPracticeDetailsPopup"),btn=$("bookmarkPracticeDetailsBtn");
+ if(!popup||popup.hidden||e.target.closest("#bookmarkPracticeDetailsPopup")||e.target.closest("#bookmarkPracticeDetailsBtn"))return;
+ popup.hidden=true;if(btn)btn.setAttribute("aria-expanded","false");
+});
 $("resultHistoryModal").addEventListener("click", e => {
  const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
  if(!popup||popup.hidden||e.target.closest("#historyReviewDetailsPopup")||e.target.closest("#historyReviewDetailsBtn"))return;
