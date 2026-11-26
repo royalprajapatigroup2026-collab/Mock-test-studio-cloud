@@ -8424,7 +8424,7 @@ function cloudQuestionToStudioQuestion(raw, test, index){
  const options = {};
  ["A","B","C","D"].forEach((letter,i)=>{ options[letter] = String(optionsRaw[i] == null ? "" : optionsRaw[i]); });
  let answer = raw.answer != null ? String(raw.answer).trim().toUpperCase() : raw.correctAnswer;
- if(typeof answer === "number" || (typeof answer === "string" && /^\\d+$/.test(answer))){
+ if(typeof answer === "number" || (typeof answer === "string" && /^\d+$/.test(answer))){
   const answerIndex = Number(answer);
   answer = ["A","B","C","D"][answerIndex] || "";
  }else answer = String(answer || "").trim().toUpperCase();
