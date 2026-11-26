@@ -9318,7 +9318,7 @@ async function qbReceiveSharedJsonFile(){
  const params=new URLSearchParams(location.search);
  if(params.get("shared")!=="1")return;
  try{
-  const cache=await caches.open("mock-test-studio-v18");
+  const cache=await caches.open("mock-test-studio-v19");
   const key=new Request(new URL("__share_target_file__",location.origin).toString());
   const response=await cache.match(key);
   if(!response)throw new Error("The shared file could not be found. Please share it again.");
@@ -10209,6 +10209,67 @@ html, body, body *:not(input):not(textarea):not(select):not([contenteditable="tr
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",restore,{once:true});else restore();
 })();
 </script>
+
+
+<style id="bookmark-history-whole-page-scroll-v1">
+/* Bookmark practice + saved-result review: one continuous page scroll.
+   Headers, question panels, explanations and navigation move together;
+   reaching the end of the question content lets the whole page continue moving. */
+#bookmarkPracticePage{
+ display:block!important;position:relative!important;
+ height:auto!important;min-height:100dvh!important;max-height:none!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important;
+}
+#bookmarkPracticePage .bookmark-practice-review-header{
+ position:static!important;top:auto!important;inset-block-start:auto!important;
+}
+#bookmarkPracticePage .bookmark-practice-card,
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ position:relative!important;inset:auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;
+ max-height:none!important;overflow:visible!important;
+ display:flex!important;flex-direction:column!important;
+}
+#bookmarkPracticePage .bookmark-practice-scroll,
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll{
+ flex:0 0 auto!important;width:100%!important;height:auto!important;
+ min-height:0!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+ -webkit-overflow-scrolling:auto!important;
+}
+#bookmarkPracticePage .bookmark-practice-controls{position:static!important}
+#bookmarkPracticePage:has(.bookmark-practice-card.review-panel-expanded) .bookmark-practice-review-header{display:flex!important}
+
+/* Saved test results: the close/title strip and review content share the
+   history card's scroll surface instead of pinning the header or trapping touch. */
+#resultHistoryModal > .history-modal-card,
+#resultHistoryModal > .modal-card.history-modal-card{
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important;
+}
+#resultHistoryModal .modal-head.history-icon-close-head{
+ position:static!important;top:auto!important;inset-block-start:auto!important;
+}
+#resultHistoryModal .history-review-page{
+ overflow:visible!important;height:auto!important;max-height:none!important;
+}
+#resultHistoryModal .history-review-single-question,
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:relative!important;inset:auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;
+ max-height:none!important;overflow:visible!important;
+ display:flex!important;flex-direction:column!important;
+}
+#resultHistoryModal .saved-review-scroll,
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
+ flex:0 0 auto!important;width:100%!important;height:auto!important;
+ min-height:0!important;max-height:none!important;
+ overflow:visible!important;overscroll-behavior:auto!important;
+ -webkit-overflow-scrolling:auto!important;
+}
+#resultHistoryModal .saved-review-question-nav{position:static!important}
+</style>
 
 </body>
 </html>
