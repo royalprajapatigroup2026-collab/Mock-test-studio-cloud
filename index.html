@@ -5220,31 +5220,27 @@ function renderStemHTML(stem){
 function renderExplanationHTML(exp){
  const source=String(exp||"").trim();
  if(!source)return "";
- // Split statement-labelled explanations into separate, colour-coded blocks.
  const statementParts=source.split(/(?=(?:Statement|Stmt\.)\s*\d+\s+is\s+(?:correct|incorrect)\s*[:.])/i);
  const hasStatementBlocks=statementParts.length>1 || /^(?:Statement|Stmt\.)\s*\d+\s+is\s+(?:correct|incorrect)\s*[:.]/i.test(source);
  if(hasStatementBlocks){
   return statementParts.filter(part=>part.trim()).map(part=>{
    const match=part.trim().match(/^((?:Statement|Stmt\.)\s*\d+)\s+is\s+(correct|incorrect)\s*[:.]?\s*/i);
-   if(!match)return \`<div class="exp-line">\${formatInline(part.trim())}</div>\`;
+   if(!match)return '<div class="exp-line">'+formatInline(part.trim())+'</div>';
    const status=match[2].toLowerCase();
    const body=part.trim().slice(match[0].length).trim();
    const lines=body.split("\n").filter(line=>line.trim());
    const bodyHTML=lines.map(line=>{
     const isBullet=/^(?:•\s+|-\s+|\d+\.\s+)/.test(line);
-    return \`<div class="exp-line\${isBullet?" exp-bullet":""}">\${formatInline(line)}</div>\`;
+    return '<div class="exp-line'+(isBullet?' exp-bullet':'')+'">'+formatInline(line)+'</div>';
    }).join("");
-   return \`<section class="exp-statement-block exp-statement-\${status}">
-    <div class="exp-statement-label">\${esc(match[1])} — \${status.toUpperCase()}</div>
-    <div class="exp-statement-body">\${bodyHTML}</div>
-   </section>\`;
+   return '<section class="exp-statement-block exp-statement-'+status+'"><div class="exp-statement-label">'+esc(match[1])+' — '+status.toUpperCase()+'</div><div class="exp-statement-body">'+bodyHTML+'</div></section>';
   }).join("");
  }
  const lines=source.split("\n").filter(line=>line.trim()!=="");
  return lines.map(line=>{
   const isBullet=/^(?:•\s+|-\s+|\d+\.\s+)/.test(line);
   const cls=isBullet?"exp-line exp-bullet":"exp-line";
-  return \`<div class="\${cls}">\${formatInline(line)}</div>\`;
+  return '<div class="'+cls+'">'+formatInline(line)+'</div>';
  }).join("");
 }
 function renderVerificationNoteHTML(note){
