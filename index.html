@@ -4475,12 +4475,7 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
 }
 </style>
 
-<style id="selected-chapter-dark-gold-v1">
-#homeDashboard #homeSelectedChapter{
- color:#B8860B!important;
- font-weight:850!important;
-}
-</style>
+
 </head>
 <body>
 
@@ -8261,7 +8256,7 @@ function pushTestBackSentinel(){
 }
 function armTestBackGuard(){
  if(testBackGuardActive){
-  for(let i=0;i<2;i++) pushTestBackSentinel();
+  // Keep only the single Back sentinel; do not stack hidden Back steps.
   return;
  }
  testBackGuardActive = true;
@@ -10921,6 +10916,12 @@ body.page-workspace-open #bookmarkPracticePage{
 #bookmarkPracticePage #bookmarkPracticeCloseBtn,#resultHistoryModal #closeResultHistoryBtn{display:none!important}
 #homeDashboard .home-dashboard-card h2{display:block!important;width:100%!important;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
 #homeDashboard #homeSelectedChapter{display:block!important;width:100%!important;max-width:100%!important;margin:0 auto 22px!important;text-align:center!important;color:#064e3b!important;font-weight:900!important}
+</style>
+<style id="selected-chapter-dark-gold-v1">
+#homeDashboard #homeSelectedChapter{
+ color:#B8860B!important;
+ font-weight:850!important;
+}
 </style>
 </body>
 </html>
