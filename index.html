@@ -10230,7 +10230,7 @@ html, body { max-width:100%; }
   if(!message)return;
   appendChat("user",message);input.value="";
   const target=currentTarget();
-  const asksQuestions=/(generate|create|prepare|make|बनाओ|बनाइए|तैयार).{0,80}(question|mcq|quiz|प्रश्न)|(?:question|mcq|quiz).{0,80}(generate|create|prepare|बनाओ|तैयार)/i.test(message);
+  const asksQuestions=/(generate|create|prepare|make|बनाओ|बनाइए|तैयार).{0,80}(question|mcq|quiz|प्रश्न)|(?:question|mcq|quiz|प्रश्न).{0,80}(generate|create|prepare|बनाओ|बनाइए|तैयार)/i.test(message);
   try{
    const data=await request("chat",{message:message,conversation_id:conversationId,generate_questions:asksQuestions,requested_count:(message.match(/(\d{1,3})\s*(?:mcqs?|questions?)/i)||[])[1]||20,sourceText:attachedFiles.map(f=>"\n\n"+f.name+"\n"+f.text).join(""),targetSubject:target.targetSubject,targetChapterId:target.targetChapterId,targetChapterTitle:target.targetChapterTitle});
    if(data.review_task){appendChat("model","Questions generated. Open Preview & Approve to add them to the selected chapter.");await loadTasks();await previewTask(data.review_task.id);}
