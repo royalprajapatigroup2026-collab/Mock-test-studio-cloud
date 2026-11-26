@@ -4753,15 +4753,7 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       because .reader is intentionally hidden while page-workspace-open is active. -->
  <section id="bookmarkPracticePage" class="bookmark-practice-page" hidden aria-label="Bookmarked Questions Practice">
   <header class="bookmark-practice-header bookmark-practice-review-header compact-review-header" aria-label="Bookmarked Questions Practice">
-   <div class="compact-header-details-wrap">
-    <button type="button" class="history-details-trigger bookmark-details-trigger" id="bookmarkPracticeDetailsBtn" aria-expanded="false" aria-controls="bookmarkPracticeDetailsPopup" title="Bookmark details">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="19" r="1.5"/></svg>
-    </button>
-    <div class="history-details-popup bookmark-details-popup" id="bookmarkPracticeDetailsPopup" hidden>
-     <div class="history-details-popup-title">Bookmark Details</div>
-     <div class="bookmark-details-count"><strong id="bookmarkPracticeCount" aria-live="polite">0</strong><span>Bookmarked Questions</span></div>
-    </div>
-   </div>
+   <span id="bookmarkPracticeCount" hidden>0</span>
    <button type="button" class="bookmark-practice-close" id="bookmarkPracticeCloseBtn" aria-label="Close bookmarked practice" title="Close">×</button>
   </header>
   <div id="bookmarkPracticeList" class="bookmark-practice-list"></div>
@@ -7122,7 +7114,15 @@ $("resultHistoryList").addEventListener("click", e => {
   renderResultHistory();
  }
 });
+$("historyReviewDetailsBtn").addEventListener("click", () => {
+ const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
+ const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
+});
 $("resultHistoryModal").addEventListener("click", e => {
+ const legacyPopup=$("historyReviewDetailsPopup"),legacyBtn=$("historyReviewDetailsBtn");
+ if(legacyPopup&&!legacyPopup.hidden&&!e.target.closest("#historyReviewDetailsPopup")&&!e.target.closest("#historyReviewDetailsBtn")){
+  legacyPopup.hidden=true;legacyBtn.setAttribute("aria-expanded","false");
+ }
  const toggle=e.target.closest("[data-saved-details-toggle]");
  if(toggle){
   const wrap=toggle.closest(".saved-review-inline-details");
