@@ -4744,7 +4744,7 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
  <section id="bookmarkPracticePage" class="bookmark-practice-page" hidden aria-label="Bookmarked Questions Practice">
   <header class="bookmark-practice-header bookmark-practice-review-header compact-review-header" aria-label="Bookmarked Questions Practice">
    <span id="bookmarkPracticeCount" hidden>0</span>
-   <button type="button" class="bookmark-practice-close" id="bookmarkPracticeCloseBtn" aria-label="Close bookmarked practice" title="Close">×</button>
+   <button type="button" class="bookmark-practice-close" id="bookmarkPracticeCloseBtn" aria-label="Close bookmarked practice" title="Close" hidden>×</button>
   </header>
   <div id="bookmarkPracticeList" class="bookmark-practice-list"></div>
  </section>
@@ -4964,7 +4964,7 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
      <div class="history-review-filters" id="historyReviewFilters" role="toolbar" aria-label="Filter saved questions"></div>
     </div>
    </div>
-   <button type="button" class="act-btn history-page-close" id="closeResultHistoryBtn" aria-label="Close Saved Test Results" title="Close">×</button>
+   <button type="button" class="act-btn history-page-close" id="closeResultHistoryBtn" aria-label="Close Saved Test Results" title="Close" hidden>×</button>
   </div>
   <div class="history-summary" id="historySummary"></div>
   <div class="history-list" id="resultHistoryList"></div>
@@ -6285,6 +6285,7 @@ function renderSavedAttemptReview(item){
 }
 
 function openSavedAttemptReview(index){
+ if(reviewNavLayer==="saved-list"){history.pushState({mockReviewLayer:"saved-review"},"","#saved-test-review");reviewNavLayer="saved-review";}
  savedReviewExpanded=true;
  savedReviewReattemptMode=false;
  const items = loadResultHistory();
@@ -6307,8 +6308,13 @@ function backToResultHistory(){
 function openResultHistory(){
  renderResultHistory();
  $("resultHistoryModal").classList.add("open");
+ if(reviewNavLayer!=="saved-list"){history.pushState({mockReviewLayer:"saved-list"},"","#saved-test-results");reviewNavLayer="saved-list";}
 }
-function closeResultHistory(){ savedReviewExpanded=false; $("resultHistoryModal").classList.remove("open"); }
+function closeResultHistory(fromAndroidBack=false){
+ if(!fromAndroidBack&&(reviewNavLayer==="saved-review"||reviewNavLayer==="saved-list")){history.back();return;}
+ savedReviewExpanded=false;$("resultHistoryModal").classList.remove("open");
+ if(fromAndroidBack)reviewNavLayer=null;
+}
 
 function computeStats(sess, cs){
  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
@@ -6995,6 +7001,13 @@ document.addEventListener("click",e=>{
  }
 });
 
+let reviewNavLayer=null;
+window.addEventListener("popstate",()=>{
+ if(reviewNavLayer==="bookmark"){closeBookmarkPracticePage(true);return;}
+ if(reviewNavLayer==="saved-review"){backToResultHistory();reviewNavLayer="saved-list";return;}
+ if(reviewNavLayer==="saved-list"){closeResultHistory(true);return;}
+});
+
 $("resultHistoryBtn").addEventListener("click", () => {
  closePopovers();
  openResultHistory();
@@ -7381,6 +7394,7 @@ function renderBookmarkPracticePage(){
  </article>`;
 }
 function openBookmarkPracticePage(){
+ if(reviewNavLayer!=="bookmark"){history.pushState({mockReviewLayer:"bookmark"},"","#bookmarked-questions");reviewNavLayer="bookmark";}
  bookmarkReviewExpanded=true;
  document.body.classList.add("page-workspace-open");
  bookmarkPracticeQueue=getBookmarkedQuestionItems().slice();
@@ -7392,10 +7406,12 @@ function openBookmarkPracticePage(){
  window.scrollTo({top:0,behavior:"smooth"});
 }
 $("homeViewAllBookmarksBtn").addEventListener("click",openBookmarkPracticePage);
-function closeBookmarkPracticePage(){
+function closeBookmarkPracticePage(fromAndroidBack=false){
+ if(!fromAndroidBack&&reviewNavLayer==="bookmark"){history.back();return;}
  bookmarkReviewExpanded=false;
  document.body.classList.remove("page-workspace-open");
  $("bookmarkPracticePage").hidden=true;$("homeDashboard").hidden=false;
+ if(fromAndroidBack)reviewNavLayer=null;
  renderHomeBookmarkedPreview();window.scrollTo({top:0,behavior:"smooth"});
 }
 $("bookmarkPracticeBackBtn")?.addEventListener("click",closeBookmarkPracticePage);
@@ -10843,5 +10859,11 @@ body.page-workspace-open #bookmarkPracticePage{
 #resultHistoryModal .history-review-filters .history-filter-chip:disabled{opacity:.42!important;filter:grayscale(.35)!important;cursor:not-allowed!important;pointer-events:none!important}
 </style>
 
+
+<style id="android-back-navigation-and-home-alignment-v1">
+#bookmarkPracticePage #bookmarkPracticeCloseBtn,#resultHistoryModal #closeResultHistoryBtn{display:none!important}
+#homeDashboard .home-dashboard-card h2{display:block!important;width:100%!important;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
+#homeDashboard #homeSelectedChapter{display:block!important;width:100%!important;max-width:100%!important;margin:0 auto 22px!important;text-align:center!important;color:#064e3b!important;font-weight:900!important}
+</style>
 </body>
 </html>
