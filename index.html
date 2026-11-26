@@ -4680,14 +4680,6 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
       <button type="button" class="home-action secondary" id="homeQuestionBankManagerBtn">Question Bank Manager</button>
      </div>
     </div>
-    <section class="home-ai-studio-card" aria-label="Gemini AI Question Studio">
-     <div class="home-ai-studio-icon" aria-hidden="true">✨</div>
-     <div class="home-ai-studio-copy">
-      <h3>Gemini AI Question Studio</h3>
-      <p>Generate UPSC EPFO-level questions, schedule question sets, manage AI tasks and use saved study memory.</p>
-     </div>
-     <button type="button" class="home-ai-studio-launch" id="homeAiQuestionStudioBtn">Open AI Question Studio →</button>
-    </section>
     <section class="home-study-snapshot" id="homeStudySnapshot" aria-label="Study progress snapshot">
      <div class="home-study-snapshot-head">
       <div><h3>Your Study Snapshot</h3><p>Based on saved answers on this device</p></div>
@@ -9823,69 +9815,51 @@ html, body { max-width:100%; }
    <button type="button" class="ai-studio-small-btn" id="aiStudioConnectBtn">Unlock / Connect</button>
    <span class="ai-studio-auth-status" id="aiStudioConnectionStatus">Locked — API key is configured on the server, not here.</span>
   </div>
-  <div class="ai-studio-grid">
-   <section class="ai-studio-pane">
-    <h3>Create a question-generation task</h3>
-    <div class="ai-studio-fields">
-     <div class="ai-studio-field full"><label for="aiStudioTestTitle">Published test title</label><input id="aiStudioTestTitle" value="UPSC EPFO AI Mock Test"></div>
-     <div class="ai-studio-field"><label for="aiStudioSubject">Subject / Act</label>
-      <select id="aiStudioSubject">
-       <option>Code on Wages, 2019</option><option>Industrial Relations Code, 2020</option>
-       <option>Code on Social Security, 2020</option><option>OSHWC Code, 2020</option>
-       <option>EPF & MP Act, 1952</option><option>ESI Act, 1948</option>
-       <option>Labour Laws — Mixed</option><option>Accounting & Auditing</option>
-       <option>Indian Polity</option><option>Economy</option><option>General Studies</option><option>Custom</option>
-      </select>
-     </div>
-     <div class="ai-studio-field"><label for="aiStudioTopic">Chapter / topic</label><input id="aiStudioTopic" placeholder="e.g. Chapter IV — EPF Scheme"></div>
-     <div class="ai-studio-field"><label for="aiStudioCount">Number of questions (1–200)</label><input type="number" id="aiStudioCount" min="1" max="200" value="20"></div>
-     <div class="ai-studio-field"><label for="aiStudioDifficulty">Difficulty</label>
-      <select id="aiStudioDifficulty"><option>UPSC EPFO APFC level</option><option>UPSC EPFO EO/AO level</option><option>Very difficult — statement based</option><option>Mixed — factual + conceptual + analytical</option></select>
-     </div>
-     <div class="ai-studio-field"><label for="aiStudioLanguage">Question language</label>
-      <select id="aiStudioLanguage"><option>English with simple explanations</option><option>Bilingual Hindi + English</option><option>Hindi</option></select>
-     </div>
-     <div class="ai-studio-field"><label for="aiStudioRunAt">Start at (blank = now)</label><input type="datetime-local" id="aiStudioRunAt"></div>
-     <div class="ai-studio-field"><label for="aiStudioDeadlineMins">Complete within (minutes)</label><input type="number" id="aiStudioDeadlineMins" min="2" max="1440" value="60"></div>
-     <div class="ai-studio-field full"><label for="aiStudioPrompt">Your complete instructions to Gemini</label><textarea id="aiStudioPrompt" placeholder="Tell Gemini exactly what to cover, question mix, provisions, sections, facts, case laws, difficulty, negative marking, explanation format, etc."></textarea></div>
-     <div class="ai-studio-field full"><label for="aiStudioSource">Source material (paste bare Act / notes / selected provisions)</label><textarea class="ai-source" id="aiStudioSource" placeholder="Paste the exact source content here. Gemini will treat it as the primary authority."></textarea></div>
+  <div class="ai-studio-grid ai-studio-workspace">
+   <section class="ai-studio-pane ai-composer-pane">
+    <div class="ai-composer-heading"><div><span class="ai-studio-kicker">PROMPT WORKSPACE</span><h3>What should Gemini do?</h3><p>Write your complete instructions below. Add source files when needed.</p></div><span class="ai-composer-spark">✦</span></div>
+    <div class="ai-studio-field full">
+     <label for="aiStudioPrompt">Your prompt</label>
+     <textarea id="aiStudioPrompt" class="ai-prompt-editor" rows="14" placeholder="Example: Create 50 UPSC EPFO APFC-level MCQs from the attached Bare Act. Cover every section and proviso, include statement-based and factual questions, explain each answer and simplify difficult English legal terms…"></textarea>
+     <div class="ai-prompt-foot"><span>No app-imposed character limit</span><span id="aiPromptCharCount">0 characters</span></div>
     </div>
-    <div class="ai-studio-action">
-     <button type="button" class="ai-studio-main-btn" id="aiStudioCreateTaskBtn">Generate / Schedule & Auto-Publish</button>
-     <button type="button" class="ai-studio-small-btn" id="aiStudioRefreshBtn">Refresh tasks</button>
+    <div class="ai-attach-area">
+     <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+     <button type="button" class="ai-attach-btn" id="aiStudioAttachBtn"><span>＋</span> Add files</button>
+     <span class="ai-studio-muted">PDF, TXT, DOCX, CSV, JSON, Markdown and text files</span>
+     <div id="aiStudioFileList" class="ai-file-list" aria-live="polite"></div>
+     <p id="aiStudioFileStatus" class="ai-studio-muted">Files are read as text and included with your prompt. Scanned PDFs may need OCR first.</p>
     </div>
-    <p class="ai-studio-hint">Tasks are processed in batches of 10. The scheduler checks every minute. Once all questions pass validation, the test is automatically published and added to your existing Select Subject → Published Online Mock Tests list.</p>
-    <div class="ai-studio-status" id="aiStudioFormStatus"></div>
-
-    <h4>Gemini memory chat</h4>
-    <div class="ai-chat-log" id="aiStudioChatLog"><div class="ai-studio-muted">Your conversation will be saved in Supabase and reused as context in later messages.</div></div>
-    <div class="ai-chat-compose">
-     <textarea id="aiStudioChatInput" placeholder="Ask Gemini to refine your instructions, plan a chapter-wise question task, or remember a study rule..."></textarea>
-     <button type="button" class="ai-studio-main-btn" id="aiStudioChatSendBtn">Send</button>
+    <div class="ai-composer-footer">
+     <label class="ai-schedule-label" for="aiStudioRunAt">Run now or schedule</label>
+     <input type="datetime-local" id="aiStudioRunAt" aria-label="Optional scheduled start time">
+     <button type="button" class="ai-studio-main-btn ai-create-task-btn" id="aiStudioCreateTaskBtn"><span>✦</span> Create AI task</button>
     </div>
-    <div class="ai-studio-action">
-     <select id="aiStudioSavedChats" aria-label="Saved Gemini conversations" style="flex:1;min-width:0;border:1px solid var(--border-strong);border-radius:9px;padding:7px;background:var(--surface-alt);color:var(--text);font-size:.75rem"><option value="">Saved conversations…</option></select>
-     <button type="button" class="ai-studio-small-btn" id="aiStudioOpenSavedChatBtn">Open chat</button>
-     <button type="button" class="ai-studio-small-btn" id="aiStudioRefreshChatsBtn">↻</button>
-    </div>
-    <div class="ai-studio-action"><button type="button" class="ai-studio-small-btn" id="aiStudioNewChatBtn">New conversation</button></div>
+    <div class="ai-studio-status" id="aiStudioFormStatus" role="status" aria-live="polite"></div>
+    <p class="ai-studio-hint">Gemini will generate the requested question set in batches, validate it and publish it to your existing online mock-test list when complete. Include the desired question count and exam level in your prompt.</p>
    </section>
-
-   <aside class="ai-studio-pane">
-    <div class="ai-task-top"><h3>Task Manager</h3><button type="button" class="ai-studio-small-btn" id="aiStudioTasksRefreshBtn">↻</button></div>
-    <div class="ai-task-list" id="aiStudioTaskList"><div class="ai-studio-muted">Unlock Studio to load your tasks.</div></div>
-
-    <h4>Long-term memory</h4>
-    <div class="ai-studio-field"><label for="aiStudioMemoryKey">Memory title / key</label><input class="ai-studio-memory-input" id="aiStudioMemoryKey" value="UPSC EPFO Exam Preferences"></div>
-    <div class="ai-studio-field" style="margin-top:7px"><label for="aiStudioMemoryContent">What Gemini should remember across tasks</label><textarea id="aiStudioMemoryContent" style="width:100%;min-height:115px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:9px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.8rem" placeholder="e.g. Questions should be UPSC EPFO APFC level, cover provisions systematically, use precise legal facts, and explain English jargon simply."></textarea></div>
-    <div class="ai-studio-action"><button type="button" class="ai-studio-small-btn" id="aiStudioSaveMemoryBtn">Save long-term memory</button></div>
-    <div class="ai-memory-list" id="aiStudioMemoryList"></div>
-    <p class="ai-studio-muted">Memory and conversation history are stored in private database tables. The Gemini API itself does not magically remember your website data; this app supplies saved context to each new request.</p>
+   <aside class="ai-studio-side">
+    <section class="ai-studio-pane ai-task-pane">
+     <div class="ai-task-top"><div><span class="ai-studio-kicker">BACKGROUND WORK</span><h3>Task Manager</h3></div><button type="button" class="ai-studio-small-btn" id="aiStudioTasksRefreshBtn" title="Refresh tasks">↻</button></div>
+     <div class="ai-task-list" id="aiStudioTaskList"><div class="ai-studio-muted">Connect to load your tasks.</div></div>
+    </section>
+    <section class="ai-studio-pane ai-memory-pane">
+     <div class="ai-task-top"><div><span class="ai-studio-kicker">PERSISTENT CONTEXT</span><h3>Personal Memory</h3></div><button type="button" class="ai-studio-small-btn" id="aiStudioNewMemoryBtn">＋ Add</button></div>
+     <div id="aiStudioMemoryList" class="ai-memory-list"><div class="ai-studio-muted">Connect to load saved memories.</div></div>
+     <div class="ai-memory-editor">
+      <label for="aiStudioMemoryKey">Memory title</label><input class="ai-studio-memory-input" id="aiStudioMemoryKey" placeholder="e.g. Exam preferences">
+      <label for="aiStudioMemoryContent">What should Gemini remember?</label><textarea id="aiStudioMemoryContent" class="ai-memory-content" placeholder="Add your preferences, instructions or useful context…"></textarea>
+      <div class="ai-studio-action"><button type="button" class="ai-studio-main-btn" id="aiStudioSaveMemoryBtn">Save memory</button><button type="button" class="ai-studio-small-btn" id="aiStudioCancelMemoryBtn">Cancel</button></div>
+     </div>
+     <p id="aiStudioMemoryStatus" class="ai-studio-muted">Saved memories are supplied as context to future Gemini tasks.</p>
+    </section>
    </aside>
   </div>
  </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <script id="ai-question-studio-client">
 (function(){
  "use strict";
@@ -9893,8 +9867,10 @@ html, body { max-width:100%; }
  const modal=document.getElementById("aiQuestionStudioModal");
  const $=function(id){return document.getElementById(id);};
  let pollHandle=null;
- let conversationId=sessionStorage.getItem("mts_ai_studio_conversation")||"";
  let seenPublished="";
+ let attachedFiles=[];
+ let selectedMemoryId="";
+ let selectedMemoryKey="";
 
  function escapeHtml(value){
   return String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
@@ -9945,7 +9921,7 @@ html, body { max-width:100%; }
     const live=await request("test_gemini");
     showConnection("Connected • "+live.model+" • Live Gemini API verified","ready");
    }else showConnection("Token accepted • Gemini Vault key not detected","warn");
-   await Promise.all([loadTasks(),loadMemories(),loadConversations()]);
+   await Promise.all([loadTasks(),loadMemories()]);
    return true;
   }catch(error){
    sessionStorage.removeItem("mts_ai_studio_admin_token");
@@ -9990,55 +9966,103 @@ html, body { max-width:100%; }
   const list=$("aiStudioMemoryList");
   if(!rows.length){list.innerHTML='<div class="ai-studio-muted">No long-term memories saved yet.</div>';return;}
   list.innerHTML=rows.map(function(m){
-   return '<div class="ai-memory-item"><strong>'+escapeHtml(m.memory_key)+'</strong><br>'+escapeHtml(m.content)+'</div>';
+   return '<div class="ai-memory-item"><div class="ai-memory-item-copy"><strong>'+escapeHtml(m.memory_key)+'</strong><p>'+escapeHtml(m.content)+'</p></div><div class="ai-memory-item-actions"><button type="button" data-memory-edit="'+escapeHtml(m.id)+'" class="ai-memory-edit">Edit</button><button type="button" data-memory-delete="'+escapeHtml(m.id)+'" class="ai-memory-delete">Delete</button></div></div>';
   }).join("");
-  if(rows.length&&$("aiStudioMemoryContent").value.trim()===""){
+  if(!selectedMemoryId&&rows.length&&$("aiStudioMemoryContent").value.trim()===""){
    const preferred=rows.find(function(m){return m.memory_key==="UPSC EPFO Exam Preferences";})||rows[0];
    $("aiStudioMemoryKey").value=preferred.memory_key;
    $("aiStudioMemoryContent").value=preferred.content;
   }
  }
+ async function readAttachedFile(file){
+  const name=file.name||"Attached file";
+  const ext=name.split(".").pop().toLowerCase();
+  if(ext==="pdf"){
+   if(!window.pdfjsLib)throw new Error("PDF reader could not load. Refresh the page and try again.");
+   const bytes=await file.arrayBuffer();
+   const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise;
+   const pages=[];
+   for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const content=await page.getTextContent();
+    pages.push(content.items.map(function(item){return item.str||"";}).join(" "));
+   }
+   return pages.join("\n");
+  }
+  if(ext==="docx"){
+   if(!window.mammoth)throw new Error("DOCX reader could not load. Refresh the page and try again.");
+   const result=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
+   return result.value||"";
+  }
+  if(["txt","md","csv","json","html","htm","xml","rtf"].includes(ext)||file.type.startsWith("text/"))return await file.text();
+  throw new Error("Unsupported file type: "+name+". Use PDF, TXT, DOCX, CSV, JSON, Markdown or another text file.");
+ }
+ function renderAttachedFiles(){
+  const target=$("aiStudioFileList");
+  target.innerHTML=attachedFiles.map(function(item,index){
+   return '<span class="ai-file-chip"><span>📎 '+escapeHtml(item.name)+'</span><button type="button" data-file-remove="'+index+'" aria-label="Remove '+escapeHtml(item.name)+'">×</button></span>';
+  }).join("");
+ }
+ async function addFiles(files){
+  const picked=Array.from(files||[]);
+  if(!picked.length)return;
+  $("aiStudioFileStatus").textContent="Reading "+picked.length+" file(s)…";
+  for(const file of picked){
+   try{
+    const text=await readAttachedFile(file);
+    attachedFiles.push({name:file.name,text:text});
+   }catch(error){$("aiStudioFileStatus").textContent=error.message;}
+  }
+  renderAttachedFiles();
+  if(attachedFiles.length)$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached. Their extracted text will accompany your prompt.";
+  $("aiStudioFiles").value="";
+ }
  async function createTask(){
-  status("Creating task and validating settings…");
-  const count=Number($("aiStudioCount").value);
-  const minutes=Number($("aiStudioDeadlineMins").value)||60;
-  if(!Number.isInteger(count)||count<1||count>200){status("Question count must be between 1 and 200.","error");return;}
-  if(!Number.isFinite(minutes)||minutes<2||minutes>1440){status("Completion window must be 2–1440 minutes.","error");return;}
+  const prompt=$("aiStudioPrompt").value.trim();
+  if(!prompt){status("Please write your prompt first.","error");return;}
+  status("Preparing your prompt and attached files…");
+  const sourceText=attachedFiles.map(function(file){return "\n\n===== ATTACHED FILE: "+file.name+" =====\n"+file.text;}).join("");
+  const countMatch=prompt.match(/(\d{1,3})\s*(?:mcqs?|questions?)/i);
+  const count=Math.max(1,Math.min(200,countMatch?Number(countMatch[1]):20));
+  const firstLine=prompt.split("\n").map(function(x){return x.trim();}).find(Boolean)||"Gemini UPSC EPFO Mock Test";
+  const title=firstLine.slice(0,160);
   const runAtValue=$("aiStudioRunAt").value;
   const runAt=runAtValue?new Date(runAtValue):new Date();
-  if(Number.isNaN(runAt.getTime())){status("Please select a valid start time.","error");return;}
-  const deadline=new Date(runAt.getTime()+minutes*60000);
-  const payload={
-   title:$("aiStudioTestTitle").value.trim()||"Gemini Generated UPSC EPFO Mock Test",
-   requested_count:count,
-   scheduled_at:runAt.toISOString(),
-   deadline_at:deadline.toISOString(),
-   prompt:$("aiStudioPrompt").value.trim(),
-   settings:{
-    testTitle:$("aiStudioTestTitle").value.trim(),
-    subject:$("aiStudioSubject").value,
-    topic:$("aiStudioTopic").value.trim(),
-    difficulty:$("aiStudioDifficulty").value,
-    language:$("aiStudioLanguage").value,
-    sourceText:$("aiStudioSource").value.slice(0,40000)
-   }
-  };
+  if(Number.isNaN(runAt.getTime())||runAt.getTime()<Date.now()-60000){status("Choose a future time or leave the schedule blank to run now.","error");return;}
   try{
-   const result=await request("create_task",payload);
+   const result=await request("create_task",{
+    title:title,requested_count:count,scheduled_at:runAt.toISOString(),prompt:prompt,
+    settings:{testTitle:title,subject:"Labour Laws — Mixed",topic:"Follow the complete user prompt",difficulty:"UPSC EPFO APFC level",language:"English with simple explanations",sourceText:sourceText}
+   });
    const task=result.task||{};
-   status("Task saved. Status: "+(task.status||"queued")+". The worker will continue in batches and auto-publish after completion.","success");
+   status("Task created successfully. Status: "+(task.status||"queued")+". You can follow its progress in Task Manager.","success");
    await loadTasks();
   }catch(error){status(error.message,"error");}
  }
  async function saveMemory(){
   const key=$("aiStudioMemoryKey").value.trim();
   const content=$("aiStudioMemoryContent").value.trim();
+  if(!key||!content){$("aiStudioMemoryStatus").textContent="Enter a title and memory content.";return;}
   try{
    await request("save_memory",{memory_key:key,content:content,category:"exam-preference",importance:10});
-   status("Long-term memory saved. Gemini will receive this context in future chats and generation tasks.","success");
+   if(selectedMemoryId&&selectedMemoryKey!==key)await request("delete_memory",{id:selectedMemoryId});
+   selectedMemoryId="";selectedMemoryKey="";
+   $("aiStudioMemoryKey").value="";$("aiStudioMemoryContent").value="";
+   $("aiStudioMemoryStatus").textContent="Memory saved.";
    await loadMemories();
-  }catch(error){status(error.message,"error");}
+  }catch(error){$("aiStudioMemoryStatus").textContent=error.message;}
  }
+ async function deleteMemory(id){
+  if(!id||!confirm("Delete this saved memory?"))return;
+  try{await request("delete_memory",{id:id});if(selectedMemoryId===id)newMemory();$("aiStudioMemoryStatus").textContent="Memory deleted.";await loadMemories();}
+  catch(error){$("aiStudioMemoryStatus").textContent=error.message;}
+ }
+ function newMemory(){
+  selectedMemoryId="";selectedMemoryKey="";
+  $("aiStudioMemoryKey").value="";$("aiStudioMemoryContent").value="";
+  $("aiStudioMemoryStatus").textContent="New memory";
+ }
+
  async function sendChat(){
   const input=$("aiStudioChatInput");
   const message=input.value.trim();
@@ -10100,20 +10124,23 @@ html, body { max-width:100%; }
  $("aiStudioOpenBtn").addEventListener("click",openModal);
  const qbAiStudioBtn=$("qbOpenAiStudioBtn");
  if(qbAiStudioBtn)qbAiStudioBtn.addEventListener("click",openModal);
- const homeAiStudioBtn=$("homeAiQuestionStudioBtn");
- if(homeAiStudioBtn)homeAiStudioBtn.addEventListener("click",openModal);
  $("aiStudioCloseBtn").addEventListener("click",closeModal);
  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
  $("aiStudioConnectBtn").addEventListener("click",connect);
  $("aiStudioCreateTaskBtn").addEventListener("click",createTask);
- $("aiStudioRefreshBtn").addEventListener("click",function(){loadTasks().then(function(){status("Task list refreshed.","success");}).catch(function(e){status(e.message,"error");});});
- $("aiStudioTasksRefreshBtn").addEventListener("click",function(){loadTasks().catch(function(e){status(e.message,"error");});});
+ $("aiStudioTasksRefreshBtn").addEventListener("click",function(){loadTasks().catch(function(e){$("aiStudioFileStatus").textContent=e.message;});});
  $("aiStudioSaveMemoryBtn").addEventListener("click",saveMemory);
- $("aiStudioChatSendBtn").addEventListener("click",sendChat);
- $("aiStudioNewChatBtn").addEventListener("click",newChat);
- $("aiStudioOpenSavedChatBtn").addEventListener("click",openSavedConversation);
- $("aiStudioRefreshChatsBtn").addEventListener("click",function(){loadConversations().catch(function(e){status(e.message,"error");});});
- $("aiStudioChatInput").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
+ $("aiStudioNewMemoryBtn").addEventListener("click",newMemory);
+ $("aiStudioCancelMemoryBtn").addEventListener("click",newMemory);
+ $("aiStudioAttachBtn").addEventListener("click",function(){$("aiStudioFiles").click();});
+ $("aiStudioFiles").addEventListener("change",function(e){addFiles(e.target.files);});
+ $("aiStudioPrompt").addEventListener("input",function(){$("aiPromptCharCount").textContent=this.value.length.toLocaleString()+" characters";});
+ $("aiStudioFileList").addEventListener("click",function(e){const btn=e.target.closest("[data-file-remove]");if(!btn)return;attachedFiles.splice(Number(btn.dataset.fileRemove),1);renderAttachedFiles();$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached.";});
+ $("aiStudioMemoryList").addEventListener("click",function(e){
+  const edit=e.target.closest("[data-memory-edit]"),del=e.target.closest("[data-memory-delete]");
+  if(del){deleteMemory(del.dataset.memoryDelete);return;}
+  if(edit){const id=edit.dataset.memoryEdit;request("get_memories").then(function(data){const m=(data.memories||[]).find(function(x){return x.id===id;});if(!m)return;selectedMemoryId=m.id;selectedMemoryKey=m.memory_key;$("aiStudioMemoryKey").value=m.memory_key;$("aiStudioMemoryContent").value=m.content;$("aiStudioMemoryStatus").textContent="Editing: "+m.memory_key;}).catch(function(err){$("aiStudioMemoryStatus").textContent=err.message;});}
+ });
  $("aiStudioAdminToken").addEventListener("keydown",function(e){if(e.key==="Enter")connect();});
 })();
 </script>
@@ -10135,6 +10162,46 @@ html, body { max-width:100%; }
  #aiQuestionStudioModal .ai-studio-card{height:100dvh!important;border-radius:0!important}
  #aiQuestionStudioModal .ai-studio-grid{padding:10px 10px max(18px,env(safe-area-inset-bottom))}
 }
+</style>
+
+<style id="ai-question-studio-composer-v2">
+#aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(310px,.75fr);align-items:start;gap:16px;padding:18px;overflow:auto}
+#aiQuestionStudioModal .ai-composer-pane{padding:clamp(16px,2.4vw,26px);border-radius:20px;box-shadow:var(--card-shadow)}
+.ai-composer-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.ai-composer-heading h3{font-size:1.25rem;margin:4px 0;font-weight:950}
+.ai-composer-heading p{margin:0;color:var(--muted);font-size:.84rem}
+.ai-composer-spark{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:var(--primary-soft);color:var(--primary);font-size:1.6rem}
+#aiQuestionStudioModal .ai-prompt-editor{width:100%;min-height:300px;resize:vertical;border:1.5px solid var(--border-strong);border-radius:16px;padding:17px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.96rem;line-height:1.65;outline-color:var(--primary)}
+.ai-prompt-foot{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.72rem;margin-top:6px}
+.ai-attach-area{margin-top:16px;padding:15px;border:1.5px dashed var(--border-strong);border-radius:15px;background:var(--surface-alt)}
+.ai-attach-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--primary);border-radius:11px;background:var(--primary-soft);color:var(--primary);font-weight:900}
+.ai-attach-btn span{font-size:1.2rem}
+.ai-file-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.ai-file-chip{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:.75rem}
+.ai-file-chip span{overflow-wrap:anywhere}
+.ai-file-chip button{border:0;background:transparent;color:var(--bad);font-size:1.1rem;font-weight:900}
+.ai-composer-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:17px;padding-top:15px;border-top:1px solid var(--border)}
+.ai-schedule-label{font-size:.75rem;color:var(--muted);font-weight:850}
+#aiStudioRunAt{min-width:0;flex:1;border:1px solid var(--border-strong);border-radius:10px;padding:9px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.78rem}
+.ai-create-task-btn{white-space:nowrap}
+#aiQuestionStudioModal .ai-studio-side{display:grid;gap:14px;min-width:0}
+#aiQuestionStudioModal .ai-task-pane,#aiQuestionStudioModal .ai-memory-pane{padding:16px;border-radius:18px}
+.ai-task-top h3{margin:3px 0 0;font-size:1.02rem}
+.ai-memory-list{display:grid;gap:8px;margin:12px 0}
+.ai-memory-item{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--surface-alt)}
+.ai-memory-item-copy{min-width:0;overflow-wrap:anywhere}
+.ai-memory-item-copy strong{font-size:.79rem}
+.ai-memory-item-copy p{font-size:.73rem;color:var(--muted);margin:3px 0 0;white-space:pre-wrap}
+.ai-memory-item-actions{display:flex;gap:5px;flex:0 0 auto}
+.ai-memory-item-actions button{border:1px solid var(--border-strong);border-radius:8px;padding:5px 7px;background:var(--surface);color:var(--primary);font-size:.68rem;font-weight:850}
+.ai-memory-item-actions .ai-memory-delete{color:var(--bad)}
+.ai-memory-editor{display:grid;gap:6px;padding:12px;border:1px solid var(--border);border-radius:13px}
+.ai-memory-editor label{font-size:.72rem;font-weight:850;color:var(--muted)}
+.ai-memory-content{min-height:100px;resize:vertical;width:100%;border:1px solid var(--border-strong);border-radius:10px;padding:9px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.8rem}
+#aiStudioMemoryKey{width:100%}
+#aiStudioMemoryStatus{font-size:.72rem;color:var(--muted);min-height:1.2em}
+@media(max-width:850px){#aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{grid-template-columns:minmax(0,1fr);padding:10px}#aiQuestionStudioModal .ai-studio-side{grid-template-columns:minmax(0,1fr)}#aiQuestionStudioModal .ai-prompt-editor{min-height:250px}}
+@media(max-width:520px){.ai-composer-heading h3{font-size:1.05rem}.ai-composer-heading p{font-size:.76rem}.ai-composer-footer{align-items:stretch}.ai-schedule-label{width:100%}#aiStudioRunAt{flex-basis:100%}.ai-create-task-btn{width:100%;justify-content:center}.ai-prompt-foot{font-size:.66rem}}
 </style>
 
 </body>
