@@ -10609,5 +10609,89 @@ html, body { max-width:100%; }
 </style>
 
 <style id="ai-studio-no-token-ui-v1">#aiStudioAuthPanel[hidden]{display:none!important}</style>
+
+<script id="android-app-back-navigation-v1">
+(function(){
+ "use strict";
+ const STATE_KEY="mockTestStudioAppBackGuard";
+ let sequence=0;
+ let handling=false;
+ function pushGuard(){
+  try{history.pushState({[STATE_KEY]:true,sequence:++sequence},"",location.href);return true;}
+  catch(_){return false;}
+ }
+ function visible(el){
+  if(!el)return false;
+  if(el.hidden)return false;
+  const style=getComputedStyle(el);
+  return style.display!=="none"&&style.visibility!=="hidden";
+ }
+ function backInsideApp(){
+  const ai=document.getElementById("aiQuestionStudioModal");
+  if(visible(ai)){
+   const review=document.getElementById("aiStudioReviewPanel");
+   if(visible(review)){document.getElementById("aiStudioReviewClose")?.click();return true;}
+   const memory=document.getElementById("aiStudioMemoryPanel");
+   if(visible(memory)){document.getElementById("aiStudioMemoryToggle")?.click();return true;}
+   const tasks=document.getElementById("aiStudioTaskPanel");
+   if(visible(tasks)){document.getElementById("aiStudioTasksToggle")?.click();return true;}
+   const chatLog=document.getElementById("aiStudioChatLog");
+   const activeChat=chatLog&&chatLog.children.length>0&&!chatLog.textContent.includes("Start a new chat or open a previous conversation.")&&!chatLog.textContent.includes("New chat. What would you like to discuss?");
+   if(activeChat&&document.getElementById("aiStudioHistoryPanel")&&!document.getElementById("aiStudioHistoryPanel").hidden){
+    document.getElementById("aiStudioNewChatBtn")?.click();return true;
+   }
+   document.getElementById("aiStudioCloseBtn")?.click();
+   return true;
+  }
+  const qb=document.getElementById("questionBankManagerPage");
+  if(visible(qb)&&document.body.classList.contains("qb-manager-open")){
+   if(typeof window.qbReturnHome==="function")window.qbReturnHome();
+   else document.getElementById("qbBackHomeBtn")?.click();
+   return true;
+  }
+  const bookmarks=document.getElementById("bookmarkPracticePage");
+  if(visible(bookmarks)){document.getElementById("bookmarkPracticeBackBtn")?.click();return true;}
+  const historyModal=document.getElementById("resultHistoryModal");
+  if(historyModal&&historyModal.classList.contains("open")){
+   const review=document.getElementById("historyReviewPage");
+   if(visible(review)&&typeof window.backToResultHistory==="function"){window.backToResultHistory();return true;}
+   if(typeof window.closeResultHistory==="function")window.closeResultHistory();
+   else document.getElementById("closeResultHistoryBtn")?.click();
+   return true;
+  }
+  const submit=document.getElementById("submitModal");
+  if(submit&&submit.classList.contains("open")){document.getElementById("cancelSubmitBtn")?.click();return true;}
+  const reset=document.getElementById("resetConfirmModal");
+  if(reset&&reset.classList.contains("open")){document.getElementById("resetCancelBtn")?.click();return true;}
+  // At the dashboard, remain in the app instead of letting Android/WebView close it.
+  return true;
+ }
+ window.addEventListener("popstate",function(){
+  if(handling)return;
+  // Existing Test / Study Mode handlers own their specialised Back behaviour.
+  if(typeof displayMode!=="undefined"&&(displayMode==="test"||displayMode==="study"))return;
+  handling=true;
+  try{backInsideApp();}
+  catch(error){console.warn("App Back navigation:",error);}
+  finally{
+   pushGuard();
+   setTimeout(function(){handling=false;},0);
+  }
+ },true);
+ window.addEventListener("pageshow",function(){pushGuard();});
+ window.addEventListener("keydown",function(event){
+  if(event.key==="BrowserBack"||event.key==="GoBack"||(event.altKey&&event.key==="ArrowLeft")){
+   if(typeof displayMode!=="undefined"&&(displayMode==="test"||displayMode==="study"))return;
+   event.preventDefault();
+   event.stopPropagation();
+   if(event.stopImmediatePropagation)event.stopImmediatePropagation();
+   backInsideApp();
+  }
+ },true);
+ // Arm one same-URL history entry after the app has loaded.
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",pushGuard,{once:true});
+ else pushGuard();
+})();
+</script>
 </body>
 </html>
