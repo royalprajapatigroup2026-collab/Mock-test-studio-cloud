@@ -8515,6 +8515,15 @@ async function loadCloudPublishedTests(){
  }
 }
 function initCloudPublishedTestSelectors(){
+  // Add the cloud subject synchronously so the custom dropdown includes it on first render,
+  // even while the Supabase request is still in flight.
+  const subjectSel=$("partSelect");
+  if(subjectSel && !subjectSel.querySelector('option[value="__cloud_published__"]')){
+   const option=document.createElement("option");
+   option.value="__cloud_published__";
+   option.textContent="☁️ Published Online Mock Tests";
+   subjectSel.appendChild(option);
+  }
  $("partSelect").addEventListener("change",e=>{
   if(e.target.value==="__cloud_published__"){
    if(!isHomeDashboard){
@@ -9314,9 +9323,10 @@ $("studyModeBtn").addEventListener("click",e=>{
 /* Re-render bookmarked preview as a count only: the Home page never displays question stems. */
 renderHomeBookmarkedPreview();
 
-initAppSelect("partSelect");
-initAppSelect("chapterSelect");
 initCloudPublishedTestSelectors();
+ initAppSelect("partSelect");
+initAppSelect("chapterSelect");
+
 refreshTimerLabels();
 syncPopoverControls();
 syncBookmarkBadge();
