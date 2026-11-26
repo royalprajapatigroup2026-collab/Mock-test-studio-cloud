@@ -10200,7 +10200,7 @@ html, body { max-width:100%; }
    const data=await request("get_task",{id:id}),task=data.task||{};
    if(!Array.isArray(task.generated_questions)||!task.generated_questions.length)throw new Error("Questions are not ready yet.");
    activeReviewTaskId=id;
-   $("aiStudioReviewTitle").textContent=task.title+" · "+task.generated_questions.length+" questions";
+   $("aiStudioReviewTitle").textContent=task.title+" · "+task.generated_questions.length+" · "+String((task.settings||{}).targetSubject||"")+" / "+String((task.settings||{}).targetChapterTitle||"");
    $("aiStudioReviewList").innerHTML=task.generated_questions.map(function(q,i){
     const opts=Array.isArray(q.options)?q.options:[];
     const answer=Number(q.correctAnswer);
@@ -10244,7 +10244,7 @@ html, body { max-width:100%; }
  function startVoiceInput(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){status("Voice typing is not supported in this browser. Try Chrome on Android.","error");return;}
-  const rec=new SR();rec.lang="en-IN";rec.interimResults=true;rec.continuous=false;
+  const rec=new SR();rec.lang="hi-IN";rec.interimResults=true;rec.continuous=false;
   $("aiStudioVoiceBtn").classList.add("listening");
   rec.onresult=function(event){let text="";for(let i=event.resultIndex;i<event.results.length;i++)text+=event.results[i][0].transcript;$("aiStudioPrompt").value=($("aiStudioPrompt").value+" "+text).trim();};
   rec.onerror=function(event){status("Voice input: "+event.error,"error");};
