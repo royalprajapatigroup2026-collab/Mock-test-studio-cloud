@@ -8526,6 +8526,30 @@ async function loadCloudPublishedTests(){
   const subjectSel=$("partSelect");
   if(!subjectSel) return;
   const existing=subjectSel.querySelector('option[value="__cloud_published__"]');
+  if(!cloudPublishedTests.length){
+   if(existing)existing.remove();
+   const savedCloudSession=!!(state.customSession&&String(state.customSession.sessionKey||"").startsWith("cloud_test_"));
+   if(cloudSubjectActive||savedCloudSession){
+    cloudSubjectActive=false;
+    state.customSession=null;
+    state.chapterIdx=0;
+    if(!SUBJECT_BANKS[state.subjectIdx])state.subjectIdx=0;
+    activeSubjectBank=SUBJECT_BANKS[state.subjectIdx]||SUBJECT_BANKS[0]||null;
+    CHAPTERS=activeSubjectBank?activeSubjectBank.chapters:DATA.chapters;
+    const chapterSel=$("chapterSelect");
+    if(chapterSel){
+     chapterSel.innerHTML=CHAPTERS.map((ch,idx)=>'<option value="'+idx+'">Chapter '+ch.chapter_no+': '+esc(ch.title)+'</option>').join("");
+     chapterSel.value=CHAPTERS.length?"0":"";
+    }
+    refreshAllAppSelects();
+    saveState();
+    updateHomeChapterLabel();
+    renderExitedTestHomeState();
+   }else{
+    refreshAppSelect("partSelect");
+   }
+   return;
+  }
   if(!existing){
    const option=document.createElement("option");
    option.value="__cloud_published__";
@@ -8540,6 +8564,12 @@ async function loadCloudPublishedTests(){
     cloudSubjectActive=true;
     subjectSel.value="__cloud_published__";
     cloudRefreshChapterSelector(savedIndex);
+   }else{
+    state.customSession=null;
+    state.chapterIdx=0;
+    cloudSubjectActive=false;
+    populateChapters();
+    saveState();
    }
   }
   refreshAppSelect("partSelect");
@@ -8548,15 +8578,8 @@ async function loadCloudPublishedTests(){
  }
 }
 function initCloudPublishedTestSelectors(){
-  // Add the cloud subject synchronously so the custom dropdown includes it on first render,
-  // even while the Supabase request is still in flight.
-  const subjectSel=$("partSelect");
-  if(subjectSel && !subjectSel.querySelector('option[value="__cloud_published__"]')){
-   const option=document.createElement("option");
-   option.value="__cloud_published__";
-   option.textContent="☁️ Published Online Mock Tests";
-   subjectSel.appendChild(option);
-  }
+ const subjectSel=$("partSelect");
+ if(!subjectSel)return;
  $("partSelect").addEventListener("change",e=>{
   if(e.target.value==="__cloud_published__"){
    if(!isHomeDashboard){
@@ -8991,9 +9014,41 @@ function qbImportSelectedBank(){
   });
  }
  records.push(mode==="merge"?{mode:"merge",target_subject:preview.target.name,bank}:{mode:"new",bank});
+ const selectedSubjectName=mode==="merge"?preview.target.name:bank.subject;
+ const selectedBankIndex=mode==="merge"
+  ? SUBJECT_BANKS.findIndex(b=>qbNorm(b.name)===qbNorm(selectedSubjectName))
+  : SUBJECT_BANKS.length;
+ let selectedChapterIndex=0;
+ if(mode==="merge"&&selectedBankIndex>=0&&bank.chapters.length){
+  const targetChapters=SUBJECT_BANKS[selectedBankIndex].chapters;
+  const firstTitle=qbNorm(bank.chapters[0].title);
+  const matchedIndex=targetChapters.findIndex(ch=>qbNorm(ch.title)===firstTitle);
+  selectedChapterIndex=matchedIndex>=0?matchedIndex:targetChapters.length;
+ }
+ let previousAppState={};
+ try{
+  const rawAppState=localStorage.getItem(STORAGE_KEY);
+  if(rawAppState!==null){
+   const parsedAppState=JSON.parse(rawAppState);
+   if(!parsedAppState||typeof parsedAppState!=="object"||Array.isArray(parsedAppState))throw new Error("Saved app state is not a valid object.");
+   previousAppState=parsedAppState;
+  }
+ }catch(err){
+  qbSetManagerMessage("Import stopped to protect your existing progress: "+err.message+" No question-bank data was changed.","error");
+  return;
+ }
+ const selectedAppState={
+  ...previousAppState,
+  subjectIdx:selectedBankIndex>=0?selectedBankIndex:SUBJECT_BANKS.length,
+  subjectName:selectedSubjectName,
+  chapterIdx:selectedChapterIndex,
+  customSession:null,
+  exitedTestKey:null
+ };
  const updates={
   [QUESTION_BANK_STORAGE_KEY]:JSON.stringify(records),
-  [QUESTION_BANK_DELETIONS_KEY]:JSON.stringify({subjects:Array.from(new Set(deletionState.subjects.map(qbNorm))),chapters:deletionState.chapters})
+  [QUESTION_BANK_DELETIONS_KEY]:JSON.stringify({subjects:Array.from(new Set(deletionState.subjects.map(qbNorm))),chapters:deletionState.chapters}),
+  [STORAGE_KEY]:JSON.stringify(selectedAppState)
  };
  if(!qbCommitStorageUpdates(updates,"Import was not completed because browser storage is full or unavailable."))return;
  const msg=mode==="merge"
@@ -9254,7 +9309,7 @@ async function qbReceiveSharedJsonFile(){
  const params=new URLSearchParams(location.search);
  if(params.get("shared")!=="1")return;
  try{
-  const cache=await caches.open("mock-test-studio-v15");
+  const cache=await caches.open("mock-test-studio-v16");
   const key=new Request(new URL("__share_target_file__",location.origin).toString());
   const response=await cache.match(key);
   if(!response)throw new Error("The shared file could not be found. Please share it again.");
