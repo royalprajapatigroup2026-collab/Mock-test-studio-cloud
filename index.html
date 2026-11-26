@@ -4709,11 +4709,6 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
      </div>
      <div class="home-recent-list" id="homeRecentBookmarksList"><div class="home-recent-empty">No bookmarked questions yet.</div></div>
     </section>
-   <section class="home-recent-results" id="cloudPublishedTests" aria-label="Published online mock tests">
-    <div class="home-recent-head"><div><h3>☁️ Published Online Mock Tests</h3><p>Tests published from the cloud question library</p></div><button type="button" class="home-recent-viewall" id="cloudReloadTests">Refresh</button></div>
-    <div id="cloudTestList" class="home-recent-list"><div class="home-recent-empty">Loading published tests…</div></div>
-    <div id="cloudTestRunner" hidden style="margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface)"></div>
-   </section>
    </div>
    </section>
 
@@ -5271,7 +5266,7 @@ function getActiveSession(){
  if(state.customSession){
   const qs = state.customSession.questionIds.map(id => Q_MAP.get(id)).filter(Boolean);
   return {
-   key: "custom_session",
+   key: state.customSession.sessionKey || "custom_session",
    isCustom: true,
    chapter_no: 0,
    title: state.customSession.title,
@@ -8415,6 +8410,132 @@ $("startTestBtn").addEventListener("click", e => {
  enterSelectedSession("test");
 });
 
+
+/* Published cloud tests are loaded into the existing Subject / Chapter selectors.
+   They use the same question renderer, timer, navigation, submission and scorecard
+   as every locally stored chapter. */
+let cloudPublishedTests = [];
+let cloudSubjectActive = false;
+const CLOUD_TEST_API = "https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions&is_published=eq.true&order=created_at.desc";
+const CLOUD_TEST_KEY = "sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
+const CLOUD_TEST_ANON_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
+function cloudQuestionToStudioQuestion(raw, test, index){
+ const optionsRaw = Array.isArray(raw.options) ? raw.options : (raw.options && typeof raw.options==="object" ? ["A","B","C","D"].map(k=>raw.options[k]) : []);
+ const options = {};
+ ["A","B","C","D"].forEach((letter,i)=>{ options[letter] = String(optionsRaw[i] == null ? "" : optionsRaw[i]); });
+ let answer = raw.answer != null ? String(raw.answer).trim().toUpperCase() : raw.correctAnswer;
+ if(typeof answer === "number" || (typeof answer === "string" && /^\\d+$/.test(answer))){
+  const answerIndex = Number(answer);
+  answer = ["A","B","C","D"][answerIndex] || "";
+ }else answer = String(answer || "").trim().toUpperCase();
+ if(!raw.question || !answer || !["A","B","C","D"].includes(answer) || ["A","B","C","D"].some(k=>!options[k].trim())) return null;
+ const id = "cloud_" + String(test.id) + "_q" + index;
+ return {
+  id, question:String(raw.question), options, answer,
+  explanation:String(raw.explanation || ""), verification_note:String(raw.verification_note || ""),
+  subheading:String(raw.subheading || test.title || "Published Mock Test"),
+  difficulty:String(raw.difficulty || ""), question_type:"single_correct", questionType:"single_correct",
+  chapter_no:1, chapter_title:String(test.title || "Published Mock Test"),
+  qno:index+1
+ };
+}
+function cloudSelectTest(index){
+ const test = cloudPublishedTests[index];
+ if(!test || !Array.isArray(test.questions)) return;
+ const questionIds = [];
+ test.questions.forEach((raw,i)=>{
+  const q = cloudQuestionToStudioQuestion(raw,test,i);
+  if(!q) return;
+  Q_MAP.set(q.id,{...q,original_id:q.id,chapter_idx:0,orig_idx:i,subject_name:"Published Online Mock Tests",subject_key:"cloud_published",source_chapter_id:"cloud_"+test.id,source_storage_key:"cloud_"+test.id});
+  questionIds.push(q.id);
+ });
+ if(!questionIds.length){
+  alert("This published test does not contain valid four-option questions with correct answers.");
+  return;
+ }
+ state.customSession = {
+  title:String(test.title || "Published Mock Test"),
+  questionIds,
+  sessionKey:"cloud_test_"+String(test.id),
+  durationMinutes:0,
+  markingScheme:"upsc"
+ };
+ state.chapterIdx = index;
+ state.reviewFilter = "all";
+ timerPaused = false;
+ saveState();
+ updateHomeChapterLabel();
+ renderExitedTestHomeState();
+}
+function cloudRefreshChapterSelector(selectedIndex){
+ const chapterSel=$("chapterSelect");
+ if(!chapterSel) return;
+ chapterSel.innerHTML=cloudPublishedTests.map((test,i)=>
+  '<option value="'+i+'">'+esc(test.title || ("Published Test "+(i+1)))+'</option>'
+ ).join("");
+ if(cloudPublishedTests.length){
+  const idx=Math.max(0,Math.min(cloudPublishedTests.length-1,Number(selectedIndex)||0));
+  chapterSel.value=String(idx);
+  cloudSelectTest(idx);
+ }else{
+  chapterSel.innerHTML='<option value="">No published tests available</option>';
+ }
+ refreshAllAppSelects();
+}
+async function loadCloudPublishedTests(){
+ try{
+  const response=await fetch(CLOUD_TEST_API,{headers:{apikey:CLOUD_TEST_KEY,Authorization:"Bearer "+CLOUD_TEST_ANON_JWT}});
+  if(!response.ok) throw new Error("HTTP "+response.status);
+  const rows=await response.json();
+  cloudPublishedTests=Array.isArray(rows)?rows.filter(t=>Array.isArray(t.questions)&&t.questions.length):[];
+  const subjectSel=$("partSelect");
+  if(!subjectSel) return;
+  const existing=subjectSel.querySelector('option[value="__cloud_published__"]');
+  if(!existing){
+   const option=document.createElement("option");
+   option.value="__cloud_published__";
+   option.textContent="☁️ Published Online Mock Tests";
+   subjectSel.appendChild(option);
+  }
+  // Restore a previously selected cloud test after its questions have been loaded.
+  if(state.customSession && String(state.customSession.sessionKey||"").startsWith("cloud_test_")){
+   const savedId=String(state.customSession.sessionKey).slice("cloud_test_".length);
+   const savedIndex=cloudPublishedTests.findIndex(t=>String(t.id)===savedId);
+   if(savedIndex>=0){
+    cloudSubjectActive=true;
+    subjectSel.value="__cloud_published__";
+    cloudRefreshChapterSelector(savedIndex);
+   }
+  }
+  refreshAppSelect("partSelect");
+ }catch(error){
+  console.warn("Published cloud tests could not be loaded:",error);
+ }
+}
+function initCloudPublishedTestSelectors(){
+ $("partSelect").addEventListener("change",e=>{
+  if(e.target.value==="__cloud_published__"){
+   if(!isHomeDashboard){
+    e.target.value=String(state.subjectIdx);
+    refreshAppSelect("partSelect");
+    return;
+   }
+   cloudSubjectActive=true;
+   state.customSession=null;
+   cloudRefreshChapterSelector(0);
+   saveState();
+   updateHomeChapterLabel();
+  }else{
+   cloudSubjectActive=false;
+  }
+ });
+ $("chapterSelect").addEventListener("change",e=>{
+  if(!cloudSubjectActive || !isHomeDashboard) return;
+  cloudSelectTest(Number(e.target.value));
+ });
+ loadCloudPublishedTests();
+}
+
 /* Boot */
 loadState();
 // Keep the user's saved answer mode, timer mode and timer duration across reloads.
@@ -9193,6 +9314,7 @@ renderHomeBookmarkedPreview();
 
 initAppSelect("partSelect");
 initAppSelect("chapterSelect");
+initCloudPublishedTestSelectors();
 refreshTimerLabels();
 syncPopoverControls();
 syncBookmarkBadge();
@@ -9587,50 +9709,7 @@ html, body { max-width:100%; }
 </style>
 
 
-<script>
-/* Published cloud tests — Supabase public read-only endpoint. */
-(()=>{
- const API="https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions&is_published=eq.true&order=created_at.desc";
- const KEY="sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
- const ANON_JWT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c29ieXptd3pjYWtidHRlcW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2NTg2MDMsImV4cCI6MjExMTIzNDYwM30.Ijw63g_1RwV68nDyugnqDGgc1rzFLTWvTLf3WTFpxm4";
- const list=document.getElementById("cloudTestList"), runner=document.getElementById("cloudTestRunner"), refresh=document.getElementById("cloudReloadTests");
- if(!list||!runner||!refresh)return;
- let tests=[];
- const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
- async function load(){
-  list.innerHTML='<div class="home-recent-empty">Loading published tests…</div>';
-  try{
-   const r=await fetch(API,{headers:{apikey:KEY,Authorization:"Bearer "+ANON_JWT}});
-   if(!r.ok)throw new Error("Cloud returned HTTP "+r.status);
-   tests=await r.json();
-   if(!Array.isArray(tests)||!tests.length){list.innerHTML='<div class="home-recent-empty">No published tests available.</div>';return;}
-   list.innerHTML=tests.map(t=>'<article style="padding:13px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px"><strong>'+esc(t.title)+'</strong><p style="margin:5px 0;color:var(--muted)">'+esc(t.description||"")+'</p><p style="margin:4px 0;font-size:.82rem;color:var(--muted)">'+(Array.isArray(t.questions)?t.questions.length:0)+' questions</p><button type="button" class="home-action primary" data-cloud-test="'+esc(t.id)+'">Start Test</button></article>').join("");
-   list.querySelectorAll("[data-cloud-test]").forEach(b=>b.addEventListener("click",()=>start(b.dataset.cloudTest)));
-  }catch(e){list.innerHTML='<div class="home-recent-empty">Could not load cloud tests: '+esc(e.message)+'</div>';}
- }
- function start(id){
-  const t=tests.find(x=>x.id===id);if(!t)return;
-  const qs=Array.isArray(t.questions)?t.questions:[];
-  runner.hidden=false;
-  runner.innerHTML='<h3 style="margin-top:0">'+esc(t.title)+'</h3><p>'+esc(t.description||"")+'</p>'+qs.map((q,i)=>'<fieldset style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:12px 0"><legend><strong>Q'+(i+1)+'. '+esc(q.question)+'</strong></legend>'+(q.options||[]).map((o,j)=>'<label style="display:block;padding:6px"><input type="radio" name="cloudq'+i+'" value="'+j+'"> '+esc(o)+'</label>').join("")+'<div id="cloud-expl-'+i+'" hidden style="margin-top:8px;color:var(--muted)"></div></fieldset>').join("")+'<button type="button" class="home-action primary" id="cloudSubmitAnswers">Submit Answers</button> <button type="button" class="home-action secondary" id="cloudCloseRunner">Close</button><p id="cloudScore" aria-live="polite"></p>';
-  runner.scrollIntoView({behavior:"smooth",block:"start"});
-  document.getElementById("cloudCloseRunner").onclick=()=>{runner.hidden=true;};
-  document.getElementById("cloudSubmitAnswers").onclick=()=>{
-   let score=0;
-   qs.forEach((q,i)=>{
-    const chosen=runner.querySelector('input[name="cloudq'+i+'"]:checked');
-    const correct=Number(q.correctAnswer);
-    if(chosen&&Number(chosen.value)===correct)score++;
-    const exp=document.getElementById("cloud-expl-"+i);
-    exp.hidden=false;exp.innerHTML='<strong>Correct answer:</strong> '+esc((q.options||[])[correct]||"")+'<br>'+esc(q.explanation||"");
-   });
-   document.getElementById("cloudScore").textContent='Your score: '+score+' / '+qs.length;
-  };
- }
- refresh.addEventListener("click",load);
- load();
-})();
-</script>
+
 
 </body>
 </html>
