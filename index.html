@@ -6275,11 +6275,17 @@ function renderSavedAttemptReview(item){
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
     </button>
     ${questionId?`<button type="button" class="history-review-bookmark-icon ${bookmarked?"is-bookmarked":""}" data-history-bookmark="${esc(questionId)}" aria-label="${bookmarked?"Remove bookmark":"Add bookmark"}" aria-pressed="${bookmarked}" title="${bookmarked?"Remove bookmark":"Add bookmark"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>`:""}
-    <button type="button" class="review-expand-btn" data-review-expand="saved" aria-label="${savedReviewExpanded?"Collapse question panel":"Expand question panel"}" title="${savedReviewExpanded?"Collapse":"Expand"}">
-     ${savedReviewExpanded
-       ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5H3M16 3v5h5M3 16h5v5M21 16h-5v5"/></svg>'
-       : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg>'}
-    </button>
+    <div class="compact-header-details-wrap saved-review-inline-details">
+     <button type="button" class="history-details-trigger" data-saved-details-toggle aria-expanded="false" aria-label="Test summary and question filters" title="Test Summary &amp; Question Filters">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="19" r="1.5"/></svg>
+     </button>
+     <div class="history-details-popup" data-saved-details-popup hidden>
+      <div class="history-details-popup-title">Test Summary &amp; Question Filters</div>
+      <div class="history-review-summary">${$("historyReviewSummary").innerHTML}</div>
+      <div class="history-review-filters" role="toolbar" aria-label="Filter saved questions">${$("historyReviewFilters").innerHTML}</div>
+     </div>
+    </div>
+    <button type="button" class="review-close-inline" data-saved-review-close aria-label="Close test review" title="Close">×</button>
    </div>
    <div class="saved-review-scroll" tabindex="0" aria-label="Scrollable saved test question, options, answer and explanation. Scroll down for the explanation.">
     <div class="q-stem">${renderStemHTML(d.question||"")}</div>
@@ -7116,34 +7122,34 @@ $("resultHistoryList").addEventListener("click", e => {
   renderResultHistory();
  }
 });
-$("historyReviewDetailsBtn").addEventListener("click", () => {
- const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
- const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
+$("resultHistoryModal").addEventListener("click", e => {
+ const toggle=e.target.closest("[data-saved-details-toggle]");
+ if(toggle){
+  const wrap=toggle.closest(".saved-review-inline-details");
+  const popup=wrap?.querySelector("[data-saved-details-popup]");
+  if(popup){popup.hidden=!popup.hidden;toggle.setAttribute("aria-expanded",String(!popup.hidden));}
+  return;
+ }
+ if(e.target.closest("[data-saved-review-close]")){closeResultHistory();return;}
+ const popup=e.target.closest("[data-saved-details-popup]");
+ if(!popup && !e.target.closest("[data-saved-details-toggle]")){
+  $("resultHistoryModal").querySelectorAll("[data-saved-details-popup]").forEach(p=>p.hidden=true);
+  $("resultHistoryModal").querySelectorAll("[data-saved-details-toggle]").forEach(b=>b.setAttribute("aria-expanded","false"));
+ }
 });
-$("bookmarkPracticeDetailsBtn").addEventListener("click", () => {
- const popup=$("bookmarkPracticeDetailsPopup"),btn=$("bookmarkPracticeDetailsBtn");
- const opening=popup.hidden;popup.hidden=!opening;btn.setAttribute("aria-expanded",String(opening));
-});
-$("bookmarkPracticePage").addEventListener("click", e => {
- const popup=$("bookmarkPracticeDetailsPopup"),btn=$("bookmarkPracticeDetailsBtn");
- if(!popup||popup.hidden||e.target.closest("#bookmarkPracticeDetailsPopup")||e.target.closest("#bookmarkPracticeDetailsBtn"))return;
- popup.hidden=true;if(btn)btn.setAttribute("aria-expanded","false");
-});
+
 $("resultHistoryModal").addEventListener("click", e => {
  const popup=$("historyReviewDetailsPopup"),btn=$("historyReviewDetailsBtn");
  if(!popup||popup.hidden||e.target.closest("#historyReviewDetailsPopup")||e.target.closest("#historyReviewDetailsBtn"))return;
  popup.hidden=true;if(btn)btn.setAttribute("aria-expanded","false");
 });
-$("historyReviewFilters").addEventListener("click", e => {
- const chip = e.target.closest("[data-history-filter]");
- if(!chip) return;
- activeHistoryFilter = chip.dataset.historyFilter || "all";
+$("resultHistoryModal").addEventListener("click", e => {
+ const chip=e.target.closest("[data-history-filter]");
+ if(!chip)return;
+ activeHistoryFilter=chip.dataset.historyFilter||"all";
  activeHistoryReviewPosition=0;
- const detailsPopup=$("historyReviewDetailsPopup"),detailsBtn=$("historyReviewDetailsBtn");
- if(detailsPopup)detailsPopup.hidden=true;
- if(detailsBtn)detailsBtn.setAttribute("aria-expanded","false");
- const current = loadResultHistory().find(x => x.id === activeHistoryAttemptId);
- if(current) renderSavedAttemptReview(current);
+ const current=loadResultHistory().find(x=>x.id===activeHistoryAttemptId);
+ if(current)renderSavedAttemptReview(current);
 });
 $("historyReviewQuestions").addEventListener("click",e=>{
  const nav=e.target.closest("[data-history-review-nav]");
@@ -7359,11 +7365,7 @@ function renderBookmarkPracticePage(){
    <button type="button" class="bookmark-card-toggle ${isBookmarked?"is-bookmarked":""}" data-bookmark-toggle="${esc(q.id)}" aria-label="${isBookmarked?"Remove bookmark":"Add bookmark"}" aria-pressed="${isBookmarked}" title="${isBookmarked?"Remove bookmark":"Add bookmark"}">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
    </button>
-   <button type="button" class="review-expand-btn" data-review-expand="bookmark" aria-label="${bookmarkReviewExpanded?"Collapse question panel":"Expand question panel"}" title="${bookmarkReviewExpanded?"Collapse":"Expand"}">
-    ${bookmarkReviewExpanded
-      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5H3M16 3v5h5M3 16h5v5M21 16h-5v5"/></svg>'
-      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg>'}
-   </button>
+   <button type="button" class="review-close-inline" data-bookmark-review-close aria-label="Close bookmarked questions" title="Close">×</button>
   </div>
   <div class="bookmark-practice-scroll" tabindex="0" aria-label="Scrollable question, options, answer and explanation. Scroll down to view the answer and explanation.">
    <div class="bookmark-practice-question q-stem">${renderStemHTML(q.question||"")}</div>
@@ -7422,20 +7424,7 @@ $("bookmarkPracticeList").addEventListener("click",e=>{
   renderBookmarkPracticePage();
   return;
  }
- const expand=e.target.closest("[data-review-expand]");
- if(expand){
-  const card=expand.closest(".bookmark-practice-card");
-  if(card){
-   const expanded=card.classList.toggle("review-panel-expanded");
-   bookmarkReviewExpanded=expanded;
-   expand.setAttribute("aria-label",expanded?"Collapse question panel":"Expand question panel");
-   expand.title=expanded?"Collapse":"Expand";
-   expand.innerHTML=expanded
-    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5H3M16 3v5h5M3 16h5v5M21 16h-5v5"/></svg>'
-    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg>';
-  }
-  return;
- }
+ if(e.target.closest("[data-bookmark-review-close]")){closeBookmarkPracticePage();return;}
  const choice=e.target.closest("[data-practice-answer]");
  if(choice){
   const q=bookmarkPracticeQueue[bookmarkPracticeIndex];if(!q)return;
@@ -10705,6 +10694,93 @@ body.page-workspace-open #bookmarkPracticePage{
  #resultHistoryModal .history-review-single-question.review-panel-expanded{
   top:52px!important;right:3px!important;bottom:3px!important;left:3px!important;
  }
+}
+</style>
+
+
+<style id="bookmark-saved-review-layout-v3">
+/* Bookmark review: no details icon/popup; the close button replaces expand. */
+#bookmarkPracticePage .bookmark-practice-review-header{display:none!important}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded{
+ position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+ max-height:100dvh!important;margin:0!important;padding:10px 10px 6px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+ box-sizing:border-box!important;z-index:10090!important;border-radius:0!important;
+}
+#bookmarkPracticePage .bookmark-practice-card.review-panel-expanded .bookmark-practice-scroll{
+ flex:1 1 0%!important;height:0!important;min-height:0!important;max-height:none!important;
+ overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+}
+#bookmarkPracticePage .bookmark-practice-card-head{flex:0 0 auto!important;gap:8px!important;margin:0 0 8px!important}
+#bookmarkPracticePage .bookmark-practice-controls{flex:0 0 auto!important;margin:0!important;padding:8px 0 max(8px,env(safe-area-inset-bottom))!important}
+#bookmarkPracticePage .bookmark-practice-card-head [data-review-expand]{display:none!important}
+#bookmarkPracticePage .bookmark-practice-card-head .review-close-inline{order:4!important}
+#bookmarkPracticePage .bookmark-practice-card-head .bookmark-practice-meta{order:1!important}
+#bookmarkPracticePage .bookmark-practice-card-head .review-reattempt-toggle{order:2!important}
+#bookmarkPracticePage .bookmark-practice-card-head .bookmark-card-toggle{order:3!important}
+
+/* Saved review: four compact controls share the question header. */
+#resultHistoryModal .modal-head.history-icon-close-head{display:none!important}
+#resultHistoryModal .history-review-single-question.review-panel-expanded{
+ position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+ max-height:100dvh!important;margin:0!important;padding:10px 10px 6px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+ box-sizing:border-box!important;z-index:10090!important;border-radius:0!important;
+}
+#resultHistoryModal .history-review-single-question.review-panel-expanded .saved-review-scroll{
+ flex:1 1 0%!important;height:0!important;min-height:0!important;max-height:none!important;
+ overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+}
+#resultHistoryModal .saved-review-question-head{flex:0 0 auto!important;gap:7px!important;margin:0 0 8px!important;justify-content:flex-end!important}
+#resultHistoryModal .saved-review-topic-status{margin-right:auto!important;min-width:0!important;flex:1 1 auto!important}
+#resultHistoryModal .saved-review-topic-status .review-topic-chip,
+#resultHistoryModal .saved-review-topic-status .sol-verdict{display:none!important}
+#resultHistoryModal .saved-review-question-nav{flex:0 0 auto!important;margin:0!important;padding:8px 0 max(8px,env(safe-area-inset-bottom))!important}
+#resultHistoryModal .saved-review-question-head .review-expand-btn{display:none!important}
+.saved-review-inline-details{position:relative!important;display:inline-flex!important;flex:0 0 38px!important;z-index:100!important}
+.saved-review-inline-details .history-details-trigger,
+#resultHistoryModal .saved-review-question-head .review-reattempt-toggle,
+#resultHistoryModal .saved-review-question-head .history-review-bookmark-icon,
+.review-close-inline{
+ width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;
+ flex:0 0 38px!important;padding:0!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;border-radius:10px!important;
+}
+.saved-review-inline-details .history-details-trigger svg{width:19px!important;height:19px!important}
+.saved-review-inline-details .history-details-popup{
+ position:absolute!important;top:calc(100% + 7px)!important;right:0!important;left:auto!important;
+ z-index:100000!important;width:min(350px,calc(100vw - 24px))!important;
+ max-width:calc(100vw - 24px)!important;max-height:min(68dvh,520px)!important;
+ overflow:auto!important;padding:11px!important;background:var(--surface)!important;
+ border:1px solid var(--border-strong)!important;border-radius:13px!important;
+ box-shadow:0 12px 32px rgba(0,0,0,.22)!important;
+}
+.saved-review-inline-details [data-saved-details-popup][hidden]{display:none!important}
+.saved-review-inline-details .history-review-summary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin:0 0 9px!important}
+.saved-review-inline-details .history-review-filters{display:flex!important;flex-direction:column!important;gap:4px!important}
+.saved-review-inline-details .history-filter-chip{display:flex!important;justify-content:space-between!important;min-height:34px!important;padding:6px 9px!important;font-size:.75rem!important}
+#resultHistoryModal .saved-review-question-head .review-close-inline,
+#bookmarkPracticePage .bookmark-practice-card-head .review-close-inline{
+ border:1px solid #fecdd3!important;background:#fff1f2!important;color:#e11d48!important;
+ font-size:1.55rem!important;line-height:1!important;cursor:pointer!important;
+}
+#resultHistoryModal .saved-review-question-head .review-close-inline:hover,
+#bookmarkPracticePage .bookmark-practice-card-head .review-close-inline:hover{
+ background:#ffe4e6!important;color:#be123c!important;
+}
+#resultHistoryModal .history-review-summary[hidden],#resultHistoryModal .history-review-filters[hidden]{display:none!important}
+.history-actions .history-details-btn{margin-left:auto!important;order:2!important}
+.history-actions .history-delete-btn{order:1!important}
+.history-actions [data-history-action="reattempt"]{order:3!important}
+@media(max-width:600px){
+ #bookmarkPracticePage .bookmark-practice-card.review-panel-expanded,
+ #resultHistoryModal .history-review-single-question.review-panel-expanded{padding:8px 8px 4px!important}
+ .saved-review-inline-details .history-details-trigger,
+ #resultHistoryModal .saved-review-question-head .review-reattempt-toggle,
+ #resultHistoryModal .saved-review-question-head .history-review-bookmark-icon,
+ .review-close-inline{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;flex-basis:36px!important}
 }
 </style>
 
