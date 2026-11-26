@@ -6190,6 +6190,11 @@ function renderResultHistory(){
 let activeHistoryFilter = "all";
 let activeHistoryReviewPosition=0;
 function renderSavedAttemptReview(item){
+ const reviewHeader=$("resultHistoryModal").querySelector(".modal-head.history-icon-close-head");
+ const detailsWrap=$("historyReviewDetailsBtn")?.parentElement;
+ const reviewClose=$("closeResultHistoryBtn");
+ if(reviewHeader&&detailsWrap)reviewHeader.appendChild(detailsWrap);
+ if(reviewHeader&&reviewClose)reviewHeader.appendChild(reviewClose);
  const questions=Array.isArray(item.details)?item.details:[];
  const isBookmarked=d=>!!d.bookmarked||(!Object.prototype.hasOwnProperty.call(d,"bookmarked")&&!!state.bookmarks[d.questionId]);
  $("historySummary").hidden=true;
@@ -7325,6 +7330,9 @@ let bookmarkPracticeAnswers=migrateQuestionAnswerMap(loadReviewAnswerMap(REVIEW_
 const REVIEW_BOOKMARK_RETAKE_ANSWERS_KEY="mockStudio.bookmarkReviewRetakeAnswers.v1";
 let bookmarkPracticeRetakeAnswers=migrateQuestionAnswerMap(loadReviewAnswerMap(REVIEW_BOOKMARK_RETAKE_ANSWERS_KEY));
 function renderBookmarkPracticePage(){
+ const pageHeader=$("bookmarkPracticePage").querySelector(".bookmark-practice-review-header");
+ const pageClose=$("bookmarkPracticeCloseBtn");
+ if(pageHeader&&pageClose)pageHeader.appendChild(pageClose);
  const host=$("bookmarkPracticeList");
  const items=bookmarkPracticeQueue;
  $("bookmarkPracticeCount").textContent=String(getBookmarkedQuestionItems().length);
@@ -7359,7 +7367,7 @@ function renderBookmarkPracticePage(){
  }
  host.innerHTML=`<article class="bookmark-practice-card ${bookmarkReviewExpanded?"review-panel-expanded":""}" data-bookmark-card="${esc(q.id)}">
   <div class="bookmark-practice-card-head">
-   <div class="bookmark-practice-meta"><span>${esc(q.subject_name||"")}${q.subject_name?" · ":""}Chapter ${esc(q.chapter_no||"")}: ${esc(q.chapter_title||"")}</span>${q.subheading?`<span class="bookmark-topic-chip">${esc(q.subheading)}</span>`:""}</div>
+   <div class="bookmark-practice-meta"><span>${esc(q.subject_name||"")}${q.subject_name?" · ":""}${esc(q.chapter_title||"")}</span></div>
    <button type="button" class="review-reattempt-toggle ${reviewReattemptMode?"is-on":""}" data-review-reattempt aria-label="Reattempt mode ${reviewReattemptMode?"on":"off"}" aria-pressed="${reviewReattemptMode}" title="Reattempt ${reviewReattemptMode?"On":"Off"}">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
    </button>
