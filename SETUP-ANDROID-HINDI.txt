@@ -3,7 +3,7 @@ MOCK TEST STUDIO — GITHUB PAGES + SUPABASE SETUP
 
 CURRENT HOSTING ARCHITECTURE
 - Frontend: GitHub Pages (static index.html/PWA files from this repository).
-- Backend: Supabase project cvs obyzmwzcakbtteqol (project ref: cvs obyzmwzcakbtteqol).
+- Backend: Supabase project cvsobyzmwzcakbtteqol (project ref: cvsobyzmwzcakbtteqol).
 - Database: public.published_mock_tests stores published tests.
 - Gemini connection: Supabase Edge Function ai-question-studio.
 - Gemini API key: stored in Supabase Vault with the secret name "Gemini Api key".
