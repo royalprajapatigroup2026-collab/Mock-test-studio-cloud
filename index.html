@@ -10239,7 +10239,7 @@ html, body { max-width:100%; }
  function parseQuestionRequest(raw,target){
   const text=String(raw||"").replace(/\s+/g," ").trim();
   const lower=text.toLowerCase();
-  const asksQuestions=/(?:previous[ -]?year|\bpyq\b|past[ -]?year|प्रीवियस *ईयर|प्रीवियस *इयर|पीवाईक्यू|पिछले\s*वर्ष|पिछले\s*साल|पुराने\s*प्रश्न|प्रश्न|questions?|mcqs?|quiz|प्रश्नों)/i.test(text);
+  const asksQuestions=/(?:previous[ -]?year|\bpyq\b|past[ -]?year|प्रीवियस *ईयर|प्रीवियस *इयर|पीवाईक्यू|पिछले\s*वर्ष|पिछले\s*साल|पुराने\s*प्रश्न|प्रश्न|क्वेश्चन(?:्स)?|क्विज|questions?|mcqs?|quiz|प्रश्नों)/i.test(text);
   const asksCreate=/(?:generate|create|prepare|make|give|show|बनाओ|बनाइए|तैयार|दो|दीजिए|निकालो|चाहिए|देना)/i.test(text);
   const numberWords={"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,"eight":8,"nine":9,"ten":10,"eleven":11,"twelve":12,"fifteen":15,"twenty":20,"पंद्रह":15,"पन्द्रह":15,"दस":10,"बीस":20,"पाँच":5,"पांच":5,"दस":10,"तीस":30,"पच्चीस":25,"सात":7,"आठ":8,"नौ":9,"चार":4,"तीन":3,"दो":2,"एक":1};
   let countMatch=text.match(/\b(\d{1,3})\b/);
@@ -10283,7 +10283,7 @@ html, body { max-width:100%; }
    const message="I couldn't get a Gemini response. "+String(error&&error.message||error);
    appendChat("model",message);
    status(message,"error");
-   if(!input.value.trim())input.value=message===" "? "" : "";
+   if(!input.value.trim())input.value=message;
   }finally{
    sendButton.disabled=false;
    sendButton.removeAttribute("aria-busy");
