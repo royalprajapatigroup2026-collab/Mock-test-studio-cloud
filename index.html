@@ -6028,7 +6028,7 @@ function renderHomeStudySnapshot(force){
  const qs=Array.from(Q_MAP.values());
  let answered=0,correct=0,wrong=0,visited=0;
  const topicMap=new Map();
- const customSession=state.chapters.custom_session;
+ const customSession=state.chapters[state.customSession?.sessionKey || "custom_session"];
  const customIndex=new Map();
  if(customSession&&state.customSession&&Array.isArray(state.customSession.questionIds)){
   state.customSession.questionIds.forEach((id,index)=>customIndex.set(id,index));
@@ -6735,7 +6735,7 @@ function renderExitedTestHomeState(){
  const exitedKey=state.exitedTestKey;
  const activeBank=SUBJECT_BANKS[state.subjectIdx]||SUBJECT_BANKS[0];
  const activeChapter=CHAPTERS[state.chapterIdx];
- const activeKey=state.customSession?"custom_session":(activeBank&&activeChapter?subjectChapterStorageKey(activeBank,activeChapter):null);
+ const activeKey=state.customSession?(state.customSession.sessionKey||"custom_session"):(activeBank&&activeChapter?subjectChapterStorageKey(activeBank,activeChapter):null);
  const show=!!exitedKey && exitedKey===activeKey;
  if(panel) panel.hidden=!show;
  // The interrupted-test card is an extra Home section, not a replacement for Home.
@@ -6750,9 +6750,10 @@ function renderExitedTestHomeState(){
 }
 function updateHomeChapterLabel(){
  const ch = CHAPTERS[state.chapterIdx];
+ const custom=state.customSession;
  const target = $("homeSelectedChapter");
- if(target) target.textContent = ch ? `Selected: Chapter ${ch.chapter_no} — ${ch.title}` : "Choose a chapter or build a personalized question set.";
- const startBtn=$("homeStartChapterBtn"),session=ch&&state.chapters[ch.id];
+ if(target) target.textContent = custom ? `Selected: ${custom.title}` : (ch ? `Selected: Chapter ${ch.chapter_no} — ${ch.title}` : "Choose a chapter or build a personalized question set.");
+ const startBtn=$("homeStartChapterBtn"),session=custom?state.chapters[custom.sessionKey||"custom_session"]:(ch&&state.chapters[ch.id]);
  if(startBtn){
   const canResume=!!(session&&session.testStarted&&!session.submitted);
   startBtn.textContent=canResume?"Continue Selected Chapter":"Start Selected Chapter";
@@ -7433,7 +7434,7 @@ function getPersonalizedPool(){
    let ans=chSaved.answers&&chSaved.answers[qIdx]||"";
    let marked=!!(chSaved.marked&&chSaved.marked[qIdx]),attempted=!!ans;
    const customIdx=state.customSession&&Array.isArray(state.customSession.questionIds)?state.customSession.questionIds.indexOf(qid):-1;
-   const customState=state.chapters.custom_session;
+   const customState=state.chapters[state.customSession?.sessionKey || "custom_session"];
    if(customIdx>=0&&customState){
     const customAnswer=customState.answers&&customState.answers[customIdx];
     if(customAnswer){ans=customAnswer;attempted=true;}
@@ -7547,7 +7548,7 @@ $("homeContinueExitedTestBtn").addEventListener("click",()=>{
    const sess=getActiveSession();
    if(state.exitedTestKey!==sess.key) return;
    state.chapters[sess.key]=createSessionState(sess.questions.length);
-   if(sess.isCustom){state.customSession=null;delete state.chapters.custom_session;}
+   if(sess.isCustom){state.customSession=null;delete state.chapters[sess.key];}
    state.exitedTestKey=null;
    timerPaused=false;
    stopTimer();
