@@ -4564,6 +4564,7 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
     <button type="button" class="btn" id="exitCustomBtn" style="display:none;border-color:var(--mark-border);color:var(--mark)">✕ Exit Personalized Set</button>
     <div class="tools-right-group">
      <button type="button" class="btn icon-tool pers-icon-btn" id="persIconModalBtn" title="Personalized Test Builder" aria-label="Personalized Test Builder">🎛</button>
+     <button type="button" class="btn ai-studio-open-btn" id="aiStudioOpenBtn" title="Generate and schedule Gemini questions">✨ AI Question Studio</button>
      <button type="button" class="btn start-test-btn" id="startTestBtn" title="Start test in full-window mode">▶ Start Test</button>
     </div>
    </div>
@@ -9722,6 +9723,340 @@ html, body { max-width:100%; }
 
 
 
+
+
+<style id="ai-question-studio-styles">
+.ai-studio-open-btn{border-color:var(--primary)!important;color:var(--primary)!important;font-weight:900!important}
+#aiQuestionStudioModal{position:fixed;inset:0;z-index:9900;background:rgba(4,9,25,.72);display:flex;align-items:center;justify-content:center;padding:14px}
+#aiQuestionStudioModal[hidden]{display:none!important}
+.ai-studio-card{width:min(1180px,100%);height:min(94dvh,940px);display:flex;flex-direction:column;overflow:hidden;background:var(--surface);color:var(--text);border:1px solid var(--border-strong);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.38)}
+.ai-studio-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--border);background:linear-gradient(120deg,var(--surface),var(--primary-soft))}
+.ai-studio-kicker{margin:0;color:var(--primary);font-size:.68rem;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+.ai-studio-head h2{margin:2px 0 0;font-size:1.18rem;font-weight:950}
+.ai-studio-close{width:40px;height:40px;border:1px solid var(--border-strong);border-radius:12px;background:var(--surface);color:var(--text);font-size:1.35rem;font-weight:900}
+.ai-studio-auth{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface-alt)}
+.ai-studio-auth input{flex:1 1 240px;min-width:0}
+.ai-studio-auth-status{font-size:.78rem;font-weight:800;color:var(--muted)}
+.ai-studio-auth-status.ready{color:var(--ok)}
+.ai-studio-auth-status.warn{color:var(--warn)}
+.ai-studio-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:13px;padding:13px;min-height:0;flex:1;overflow:auto}
+.ai-studio-pane{min-width:0;min-height:0;border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:13px}
+.ai-studio-pane h3{margin:0 0 10px;font-size:.96rem;font-weight:950}
+.ai-studio-pane h4{margin:14px 0 7px;font-size:.83rem;font-weight:900;color:var(--primary)}
+.ai-studio-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ai-studio-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ai-studio-field.full{grid-column:1/-1}
+.ai-studio-field label{font-size:.73rem;font-weight:850;color:var(--muted)}
+.ai-studio-field input,.ai-studio-field select,.ai-studio-field textarea,.ai-studio-auth input,.ai-studio-memory-input{width:100%;min-width:0;border:1px solid var(--border-strong);border-radius:10px;padding:9px 10px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.83rem;outline-color:var(--primary)}
+.ai-studio-field textarea{resize:vertical;min-height:74px;line-height:1.45}
+.ai-studio-field textarea.ai-source{min-height:105px}
+.ai-studio-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ai-studio-action{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.ai-studio-main-btn,.ai-studio-small-btn{border:1px solid var(--primary);border-radius:10px;padding:9px 13px;background:var(--primary);color:#fff;font-size:.8rem;font-weight:900}
+.ai-studio-small-btn{background:var(--primary-soft);color:var(--primary);padding:7px 10px}
+.ai-studio-hint{margin:7px 0 0;color:var(--muted);font-size:.72rem;line-height:1.5}
+.ai-studio-status{display:none;margin:8px 0 0;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-alt);font-size:.78rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.ai-studio-status.show{display:block}
+.ai-studio-status.error{border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad)}
+.ai-studio-status.success{border-color:var(--ok-border);background:var(--ok-bg);color:var(--ok)}
+.ai-task-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto}
+.ai-task-card{border:1px solid var(--border);border-radius:11px;padding:9px;background:var(--surface-alt)}
+.ai-task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ai-task-title{font-size:.78rem;font-weight:900;overflow-wrap:anywhere}
+.ai-task-state{font-size:.68rem;font-weight:900;color:var(--primary);white-space:nowrap}
+.ai-task-meta{font-size:.68rem;color:var(--muted);margin-top:4px}
+.ai-task-progress{height:6px;margin-top:7px;border-radius:20px;background:var(--border);overflow:hidden}
+.ai-task-progress span{display:block;height:100%;background:var(--primary);border-radius:20px}
+.ai-memory-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:130px;overflow:auto}
+.ai-memory-item{font-size:.7rem;color:var(--muted);padding:7px 8px;background:var(--surface-alt);border:1px solid var(--border);border-radius:8px}
+.ai-chat-log{height:190px;overflow:auto;border:1px solid var(--border);border-radius:11px;padding:8px;background:var(--surface-alt);display:flex;flex-direction:column;gap:7px}
+.ai-chat-msg{max-width:94%;padding:8px 10px;border-radius:10px;font-size:.76rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.ai-chat-msg.user{align-self:flex-end;background:var(--primary-soft);border:1px solid var(--border-strong)}
+.ai-chat-msg.model{align-self:flex-start;background:var(--surface);border:1px solid var(--border)}
+.ai-chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:7px}
+.ai-chat-compose textarea{min-width:0;resize:vertical;min-height:46px;max-height:120px;border:1px solid var(--border-strong);border-radius:10px;padding:8px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.78rem}
+.ai-studio-muted{font-size:.7rem;color:var(--muted);line-height:1.5}
+@media(max-width:800px){
+ #aiQuestionStudioModal{padding:5px}
+ .ai-studio-card{height:calc(100dvh - 10px);border-radius:14px}
+ .ai-studio-grid{grid-template-columns:minmax(0,1fr);padding:8px;gap:8px}
+ .ai-studio-pane{padding:10px}
+ .ai-studio-fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .ai-studio-open-btn{font-size:.72rem!important;padding:7px 8px!important}
+}
+@media(max-width:440px){
+ .ai-studio-fields,.ai-studio-row{grid-template-columns:minmax(0,1fr)}
+ .ai-studio-field.full{grid-column:auto}
+ .ai-studio-head{padding:11px 12px}
+ .ai-studio-head h2{font-size:1rem}
+ .ai-studio-chat-log{height:150px}
+}
+</style>
+
+<div id="aiQuestionStudioModal" hidden>
+ <div class="ai-studio-card" role="dialog" aria-modal="true" aria-labelledby="aiStudioTitle">
+  <div class="ai-studio-head">
+   <div><p class="ai-studio-kicker">Gemini • Task Queue • Persistent Memory</p><h2 id="aiStudioTitle">✨ AI Question Studio</h2></div>
+   <button type="button" class="ai-studio-close" id="aiStudioCloseBtn" aria-label="Close">×</button>
+  </div>
+  <div class="ai-studio-auth">
+   <input type="password" id="aiStudioAdminToken" autocomplete="off" placeholder="Paste AI Studio access token">
+   <button type="button" class="ai-studio-small-btn" id="aiStudioConnectBtn">Unlock / Connect</button>
+   <span class="ai-studio-auth-status" id="aiStudioConnectionStatus">Locked — API key is configured on the server, not here.</span>
+  </div>
+  <div class="ai-studio-grid">
+   <section class="ai-studio-pane">
+    <h3>Create a question-generation task</h3>
+    <div class="ai-studio-fields">
+     <div class="ai-studio-field full"><label for="aiStudioTestTitle">Published test title</label><input id="aiStudioTestTitle" value="UPSC EPFO AI Mock Test"></div>
+     <div class="ai-studio-field"><label for="aiStudioSubject">Subject / Act</label>
+      <select id="aiStudioSubject">
+       <option>Code on Wages, 2019</option><option>Industrial Relations Code, 2020</option>
+       <option>Code on Social Security, 2020</option><option>OSHWC Code, 2020</option>
+       <option>EPF & MP Act, 1952</option><option>ESI Act, 1948</option>
+       <option>Labour Laws — Mixed</option><option>Accounting & Auditing</option>
+       <option>Indian Polity</option><option>Economy</option><option>General Studies</option><option>Custom</option>
+      </select>
+     </div>
+     <div class="ai-studio-field"><label for="aiStudioTopic">Chapter / topic</label><input id="aiStudioTopic" placeholder="e.g. Chapter IV — EPF Scheme"></div>
+     <div class="ai-studio-field"><label for="aiStudioCount">Number of questions (1–200)</label><input type="number" id="aiStudioCount" min="1" max="200" value="20"></div>
+     <div class="ai-studio-field"><label for="aiStudioDifficulty">Difficulty</label>
+      <select id="aiStudioDifficulty"><option>UPSC EPFO APFC level</option><option>UPSC EPFO EO/AO level</option><option>Very difficult — statement based</option><option>Mixed — factual + conceptual + analytical</option></select>
+     </div>
+     <div class="ai-studio-field"><label for="aiStudioLanguage">Question language</label>
+      <select id="aiStudioLanguage"><option>English with simple explanations</option><option>Bilingual Hindi + English</option><option>Hindi</option></select>
+     </div>
+     <div class="ai-studio-field"><label for="aiStudioRunAt">Start at (blank = now)</label><input type="datetime-local" id="aiStudioRunAt"></div>
+     <div class="ai-studio-field"><label for="aiStudioDeadlineMins">Complete within (minutes)</label><input type="number" id="aiStudioDeadlineMins" min="2" max="1440" value="60"></div>
+     <div class="ai-studio-field full"><label for="aiStudioPrompt">Your complete instructions to Gemini</label><textarea id="aiStudioPrompt" placeholder="Tell Gemini exactly what to cover, question mix, provisions, sections, facts, case laws, difficulty, negative marking, explanation format, etc."></textarea></div>
+     <div class="ai-studio-field full"><label for="aiStudioSource">Source material (paste bare Act / notes / selected provisions)</label><textarea class="ai-source" id="aiStudioSource" placeholder="Paste the exact source content here. Gemini will treat it as the primary authority."></textarea></div>
+    </div>
+    <div class="ai-studio-action">
+     <button type="button" class="ai-studio-main-btn" id="aiStudioCreateTaskBtn">Generate / Schedule & Auto-Publish</button>
+     <button type="button" class="ai-studio-small-btn" id="aiStudioRefreshBtn">Refresh tasks</button>
+    </div>
+    <p class="ai-studio-hint">Tasks are processed in batches of 10. The scheduler checks every minute. Once all questions pass validation, the test is automatically published and added to your existing Select Subject → Published Online Mock Tests list.</p>
+    <div class="ai-studio-status" id="aiStudioFormStatus"></div>
+
+    <h4>Gemini memory chat</h4>
+    <div class="ai-chat-log" id="aiStudioChatLog"><div class="ai-studio-muted">Your conversation will be saved in Supabase and reused as context in later messages.</div></div>
+    <div class="ai-chat-compose">
+     <textarea id="aiStudioChatInput" placeholder="Ask Gemini to refine your instructions, plan a chapter-wise question task, or remember a study rule..."></textarea>
+     <button type="button" class="ai-studio-main-btn" id="aiStudioChatSendBtn">Send</button>
+    </div>
+    <div class="ai-studio-action"><button type="button" class="ai-studio-small-btn" id="aiStudioNewChatBtn">New conversation</button></div>
+   </section>
+
+   <aside class="ai-studio-pane">
+    <div class="ai-task-top"><h3>Task Manager</h3><button type="button" class="ai-studio-small-btn" id="aiStudioTasksRefreshBtn">↻</button></div>
+    <div class="ai-task-list" id="aiStudioTaskList"><div class="ai-studio-muted">Unlock Studio to load your tasks.</div></div>
+
+    <h4>Long-term memory</h4>
+    <div class="ai-studio-field"><label for="aiStudioMemoryKey">Memory title / key</label><input class="ai-studio-memory-input" id="aiStudioMemoryKey" value="UPSC EPFO Exam Preferences"></div>
+    <div class="ai-studio-field" style="margin-top:7px"><label for="aiStudioMemoryContent">What Gemini should remember across tasks</label><textarea id="aiStudioMemoryContent" style="width:100%;min-height:115px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:9px;background:var(--surface-alt);color:var(--text);font:inherit;font-size:.8rem" placeholder="e.g. Questions should be UPSC EPFO APFC level, cover provisions systematically, use precise legal facts, and explain English jargon simply."></textarea></div>
+    <div class="ai-studio-action"><button type="button" class="ai-studio-small-btn" id="aiStudioSaveMemoryBtn">Save long-term memory</button></div>
+    <div class="ai-memory-list" id="aiStudioMemoryList"></div>
+    <p class="ai-studio-muted">Memory and conversation history are stored in private database tables. The Gemini API itself does not magically remember your website data; this app supplies saved context to each new request.</p>
+   </aside>
+  </div>
+ </div>
+</div>
+
+<script id="ai-question-studio-client">
+(function(){
+ "use strict";
+ const endpoint="https://cvsobyzmwzcakbtteqol.supabase.co/functions/v1/ai-question-studio";
+ const modal=document.getElementById("aiQuestionStudioModal");
+ const $=function(id){return document.getElementById(id);};
+ let pollHandle=null;
+ let conversationId=sessionStorage.getItem("mts_ai_studio_conversation")||"";
+ let seenPublished="";
+
+ function escapeHtml(value){
+  return String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+ }
+ function token(){return sessionStorage.getItem("mts_ai_studio_admin_token")||"";}
+ async function request(action,payload){
+  if(!token())throw new Error("Enter your AI Studio access token first.");
+  const response=await fetch(endpoint,{
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json",
+    "apikey":CLOUD_TEST_KEY,
+    "Authorization":"Bearer "+CLOUD_TEST_ANON_JWT,
+    "x-ai-admin-token":token()
+   },
+   body:JSON.stringify(Object.assign({},payload||{},{action:action}))
+  });
+  const data=await response.json().catch(function(){return {};});
+  if(!response.ok)throw new Error(data.error||("Request failed: HTTP "+response.status));
+  return data;
+ }
+ function status(message,type){
+  const el=$("aiStudioFormStatus");
+  el.textContent=message||"";
+  el.className="ai-studio-status"+(message?" show":"")+(type?" "+type:"");
+ }
+ function showConnection(message,type){
+  const el=$("aiStudioConnectionStatus");
+  el.textContent=message;
+  el.className="ai-studio-auth-status"+(type?" "+type:"");
+ }
+ function appendChat(role,message){
+  const log=$("aiStudioChatLog");
+  const node=document.createElement("div");
+  node.className="ai-chat-msg "+role;
+  node.textContent=message;
+  log.appendChild(node);
+  log.scrollTop=log.scrollHeight;
+ }
+ async function connect(){
+  const entered=$("aiStudioAdminToken").value.trim()||token();
+  if(!entered){showConnection("Enter the access token.", "warn");return false;}
+  sessionStorage.setItem("mts_ai_studio_admin_token",entered);
+  try{
+   const result=await request("health");
+   if(result.geminiConfigured)showConnection("Connected • "+result.model+" • Gemini API ready","ready");
+   else showConnection("Token accepted • Add GEMINI_API_KEY in Supabase Function Secrets","warn");
+   await Promise.all([loadTasks(),loadMemories()]);
+   return true;
+  }catch(error){
+   sessionStorage.removeItem("mts_ai_studio_admin_token");
+   showConnection(error.message,"warn");
+   return false;
+  }
+ }
+ function renderTasks(tasks){
+  const target=$("aiStudioTaskList");
+  if(!tasks.length){target.innerHTML='<div class="ai-studio-muted">No tasks yet. Create your first Gemini generation task.</div>';return;}
+  target.innerHTML=tasks.map(function(t){
+   const state=String(t.status||"").replace(/_/g," ");
+   const progress=Math.max(0,Math.min(100,Number(t.progress)||0));
+   const detail=(Number(t.generated_count)||0)+"/"+(Number(t.requested_count)||0)+" questions";
+   const schedule=t.scheduled_at?new Date(t.scheduled_at).toLocaleString():"";
+   const published=t.published_test_id?" • Published test ID: "+t.published_test_id:"";
+   const error=t.last_error?'<div class="ai-task-meta" style="color:var(--bad)">'+escapeHtml(t.last_error)+'</div>':"";
+   return '<div class="ai-task-card"><div class="ai-task-top"><div class="ai-task-title">'+escapeHtml(t.title)+'</div><div class="ai-task-state">'+escapeHtml(state)+'</div></div><div class="ai-task-meta">'+escapeHtml(detail+" • "+schedule+published)+'</div><div class="ai-task-progress"><span style="width:'+progress+'%"></span></div>'+error+'</div>';
+  }).join("");
+ }
+ async function loadTasks(){
+  const data=await request("list_tasks");
+  renderTasks(data.tasks||[]);
+  const completed=(data.tasks||[]).filter(function(t){return t.status==="completed"&&t.published_test_id;});
+  const signature=completed.map(function(t){return t.published_test_id;}).join("|");
+  if(signature&&signature!==seenPublished){
+   seenPublished=signature;
+   refreshPublishedTests();
+  }
+ }
+ async function refreshPublishedTests(){
+  try{
+   if(typeof loadCloudPublishedTests==="function")await loadCloudPublishedTests();
+   if(typeof cloudSubjectActive!=="undefined"&&cloudSubjectActive&&typeof cloudRefreshChapterSelector==="function"){
+    cloudRefreshChapterSelector(0);
+   }
+  }catch(e){console.warn("Could not refresh cloud mock tests",e);}
+ }
+ async function loadMemories(){
+  const data=await request("get_memories");
+  const rows=data.memories||[];
+  const list=$("aiStudioMemoryList");
+  if(!rows.length){list.innerHTML='<div class="ai-studio-muted">No long-term memories saved yet.</div>';return;}
+  list.innerHTML=rows.map(function(m){
+   return '<div class="ai-memory-item"><strong>'+escapeHtml(m.memory_key)+'</strong><br>'+escapeHtml(m.content)+'</div>';
+  }).join("");
+  if(rows.length&&$("aiStudioMemoryContent").value.trim()===""){
+   const preferred=rows.find(function(m){return m.memory_key==="UPSC EPFO Exam Preferences";})||rows[0];
+   $("aiStudioMemoryKey").value=preferred.memory_key;
+   $("aiStudioMemoryContent").value=preferred.content;
+  }
+ }
+ async function createTask(){
+  status("Creating task and validating settings…");
+  const count=Number($("aiStudioCount").value);
+  const minutes=Number($("aiStudioDeadlineMins").value)||60;
+  if(!Number.isInteger(count)||count<1||count>200){status("Question count must be between 1 and 200.","error");return;}
+  if(!Number.isFinite(minutes)||minutes<2||minutes>1440){status("Completion window must be 2–1440 minutes.","error");return;}
+  const runAtValue=$("aiStudioRunAt").value;
+  const runAt=runAtValue?new Date(runAtValue):new Date();
+  if(Number.isNaN(runAt.getTime())){status("Please select a valid start time.","error");return;}
+  const deadline=new Date(runAt.getTime()+minutes*60000);
+  const payload={
+   title:$("aiStudioTestTitle").value.trim()||"Gemini Generated UPSC EPFO Mock Test",
+   requested_count:count,
+   scheduled_at:runAt.toISOString(),
+   deadline_at:deadline.toISOString(),
+   prompt:$("aiStudioPrompt").value.trim(),
+   settings:{
+    testTitle:$("aiStudioTestTitle").value.trim(),
+    subject:$("aiStudioSubject").value,
+    topic:$("aiStudioTopic").value.trim(),
+    difficulty:$("aiStudioDifficulty").value,
+    language:$("aiStudioLanguage").value,
+    sourceText:$("aiStudioSource").value.slice(0,40000)
+   }
+  };
+  try{
+   const result=await request("create_task",payload);
+   const task=result.task||{};
+   status("Task saved. Status: "+(task.status||"queued")+". The worker will continue in batches and auto-publish after completion.","success");
+   await loadTasks();
+  }catch(error){status(error.message,"error");}
+ }
+ async function saveMemory(){
+  const key=$("aiStudioMemoryKey").value.trim();
+  const content=$("aiStudioMemoryContent").value.trim();
+  try{
+   await request("save_memory",{memory_key:key,content:content,category:"exam-preference",importance:10});
+   status("Long-term memory saved. Gemini will receive this context in future chats and generation tasks.","success");
+   await loadMemories();
+  }catch(error){status(error.message,"error");}
+ }
+ async function sendChat(){
+  const input=$("aiStudioChatInput");
+  const message=input.value.trim();
+  if(!message)return;
+  appendChat("user",message);
+  input.value="";
+  try{
+   const data=await request("chat",{message:message,conversation_id:conversationId});
+   conversationId=data.conversation.id;
+   sessionStorage.setItem("mts_ai_studio_conversation",conversationId);
+   appendChat("model",data.answer||"No response text returned.");
+  }catch(error){appendChat("model","Error: "+error.message);}
+ }
+ function newChat(){
+  conversationId="";
+  sessionStorage.removeItem("mts_ai_studio_conversation");
+  $("aiStudioChatLog").innerHTML='<div class="ai-studio-muted">New conversation. Saved memory is still available to Gemini.</div>';
+ }
+ function openModal(){
+  modal.hidden=false;
+  $("aiStudioAdminToken").value=token();
+  if(token())connect();
+  if(pollHandle)clearInterval(pollHandle);
+  pollHandle=setInterval(function(){
+   if(!modal.hidden&&token())loadTasks().catch(function(e){console.warn(e);});
+  },15000);
+ }
+ function closeModal(){
+  modal.hidden=true;
+  if(pollHandle){clearInterval(pollHandle);pollHandle=null;}
+ }
+ $("aiStudioOpenBtn").addEventListener("click",openModal);
+ $("aiStudioCloseBtn").addEventListener("click",closeModal);
+ modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+ $("aiStudioConnectBtn").addEventListener("click",connect);
+ $("aiStudioCreateTaskBtn").addEventListener("click",createTask);
+ $("aiStudioRefreshBtn").addEventListener("click",function(){loadTasks().then(function(){status("Task list refreshed.","success");}).catch(function(e){status(e.message,"error");});});
+ $("aiStudioTasksRefreshBtn").addEventListener("click",function(){loadTasks().catch(function(e){status(e.message,"error");});});
+ $("aiStudioSaveMemoryBtn").addEventListener("click",saveMemory);
+ $("aiStudioChatSendBtn").addEventListener("click",sendChat);
+ $("aiStudioNewChatBtn").addEventListener("click",newChat);
+ $("aiStudioChatInput").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
+ $("aiStudioAdminToken").addEventListener("keydown",function(e){if(e.key==="Enter")connect();});
+})();
+</script>
 
 </body>
 </html>
