@@ -4711,6 +4711,11 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
     </section>
    </div>
    </section>
+   <section class="home-recent-results" id="cloudPublishedTests" aria-label="Published online mock tests">
+    <div class="home-recent-head"><div><h3>☁️ Published Online Mock Tests</h3><p>Tests published from the cloud question library</p></div><button type="button" class="home-recent-viewall" id="cloudReloadTests">Refresh</button></div>
+    <div id="cloudTestList" class="home-recent-list"><div class="home-recent-empty">Loading published tests…</div></div>
+    <div id="cloudTestRunner" hidden style="margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface)"></div>
+   </section>
    <section class="home-recent-results app-data-safety-card" id="appDataSafetyCard" aria-label="App Data Backup and Restore">
     <div class="home-recent-head">
      <div><h3>App Data Backup &amp; Restore</h3></div>
@@ -9579,6 +9584,51 @@ html, body { max-width:100%; }
 
 .timer-timeout-recovery{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0;padding:10px 12px;border:1px solid var(--bad-border);border-radius:12px;background:var(--bad-bg);color:var(--text)}.timer-timeout-recovery button{min-height:38px}
 </style>
+
+
+<script>
+/* Published cloud tests — Supabase public read-only endpoint. */
+(()=>{
+ const API="https://cvsobyzmwzcakbtteqol.supabase.co/rest/v1/published_mock_tests?select=id,title,description,questions&is_published=eq.true&order=created_at.desc";
+ const KEY="sb_publishable_pfhNRTG_tKQ9YvCQzBBmJA_hUNXhtIj";
+ const list=document.getElementById("cloudTestList"), runner=document.getElementById("cloudTestRunner"), refresh=document.getElementById("cloudReloadTests");
+ if(!list||!runner||!refresh)return;
+ let tests=[];
+ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ async function load(){
+  list.innerHTML='<div class="home-recent-empty">Loading published tests…</div>';
+  try{
+   const r=await fetch(API,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
+   if(!r.ok)throw new Error("Cloud returned HTTP "+r.status);
+   tests=await r.json();
+   if(!Array.isArray(tests)||!tests.length){list.innerHTML='<div class="home-recent-empty">No published tests available.</div>';return;}
+   list.innerHTML=tests.map(t=>'<article style="padding:13px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px"><strong>'+esc(t.title)+'</strong><p style="margin:5px 0;color:var(--muted)">'+esc(t.description||"")+'</p><p style="margin:4px 0;font-size:.82rem;color:var(--muted)">'+(Array.isArray(t.questions)?t.questions.length:0)+' questions</p><button type="button" class="home-action primary" data-cloud-test="'+esc(t.id)+'">Start Test</button></article>').join("");
+   list.querySelectorAll("[data-cloud-test]").forEach(b=>b.addEventListener("click",()=>start(b.dataset.cloudTest)));
+  }catch(e){list.innerHTML='<div class="home-recent-empty">Could not load cloud tests: '+esc(e.message)+'</div>';}
+ }
+ function start(id){
+  const t=tests.find(x=>x.id===id);if(!t)return;
+  const qs=Array.isArray(t.questions)?t.questions:[];
+  runner.hidden=false;
+  runner.innerHTML='<h3 style="margin-top:0">'+esc(t.title)+'</h3><p>'+esc(t.description||"")+'</p>'+qs.map((q,i)=>'<fieldset style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:12px 0"><legend><strong>Q'+(i+1)+'. '+esc(q.question)+'</strong></legend>'+(q.options||[]).map((o,j)=>'<label style="display:block;padding:6px"><input type="radio" name="cloudq'+i+'" value="'+j+'"> '+esc(o)+'</label>').join("")+'<div id="cloud-expl-'+i+'" hidden style="margin-top:8px;color:var(--muted)"></div></fieldset>').join("")+'<button type="button" class="home-action primary" id="cloudSubmitAnswers">Submit Answers</button> <button type="button" class="home-action secondary" id="cloudCloseRunner">Close</button><p id="cloudScore" aria-live="polite"></p>';
+  runner.scrollIntoView({behavior:"smooth",block:"start"});
+  document.getElementById("cloudCloseRunner").onclick=()=>{runner.hidden=true;};
+  document.getElementById("cloudSubmitAnswers").onclick=()=>{
+   let score=0;
+   qs.forEach((q,i)=>{
+    const chosen=runner.querySelector('input[name="cloudq'+i+'"]:checked');
+    const correct=Number(q.correctAnswer);
+    if(chosen&&Number(chosen.value)===correct)score++;
+    const exp=document.getElementById("cloud-expl-"+i);
+    exp.hidden=false;exp.innerHTML='<strong>Correct answer:</strong> '+esc((q.options||[])[correct]||"")+'<br>'+esc(q.explanation||"");
+   });
+   document.getElementById("cloudScore").textContent='Your score: '+score+' / '+qs.length;
+  };
+ }
+ refresh.addEventListener("click",load);
+ load();
+})();
+</script>
 
 </body>
 </html>
