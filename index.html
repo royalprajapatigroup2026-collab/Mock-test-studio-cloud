@@ -4474,6 +4474,13 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
  margin-top:64px!important;
 }
 </style>
+
+<style id="selected-chapter-dark-gold-v1">
+#homeDashboard #homeSelectedChapter{
+ color:#B8860B!important;
+ font-weight:850!important;
+}
+</style>
 </head>
 <body>
 
@@ -7957,19 +7964,9 @@ $("submitBtn").addEventListener("click", openSubmitModal);
    state.exitedTestKey=sess.key;
    timerPaused=true;
    stopTimer();
-   setDisplayMode("normal");
-   isHomeDashboard=true;
-   $("homeDashboard").hidden=false;
-   $("mockWorkspace").style.display="none";
-   $("scorecardView").style.display="none";
-   $("scorecardView").classList.remove("active");
-   document.body.classList.remove("submitted-scorecard-only");
-   document.documentElement.classList.remove("scorecard-scroll-unlocked","primary-lock");
-   document.body.classList.remove("scorecard-scroll-unlocked");
-   updateHomeChapterLabel();
-   renderExitedTestHomeState();
-   saveState();
-   window.scrollTo({top:0,behavior:"smooth"});
+   // Preserve the interrupted attempt, then return to the Saved Test Results screen.
+   goHomeDashboard();
+   openResultHistory();
    return;
   }
   firstTapAt=now;
@@ -10226,6 +10223,13 @@ html, body { max-width:100%; }
    if(typeof window.closeResultHistory==="function")window.closeResultHistory(true);
    else historyModal.classList.remove("open");
    if(typeof reviewNavLayer!=="undefined")reviewNavLayer=null;
+   return true;
+  }
+  const scorecard=document.getElementById("scorecardView");
+  if(scorecard&&scorecard.classList.contains("active")&&scorecard.style.display!=="none"){
+   // Back from a submitted scorecard returns to the Saved Test Results list.
+   if(typeof window.goHomeDashboard==="function")window.goHomeDashboard();
+   if(typeof window.openResultHistory==="function")window.openResultHistory();
    return true;
   }
   const submit=document.getElementById("submitModal");
