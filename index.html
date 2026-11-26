@@ -9824,11 +9824,11 @@ html, body { max-width:100%; }
      <div class="ai-prompt-foot"><span>No app-imposed character limit</span><span id="aiPromptCharCount">0 characters</span></div>
     </div>
     <div class="ai-attach-area">
-     <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+     <input type="file" id="aiStudioFiles" multiple accept=".pdf,.txt,.md,.csv,.json,.html,.htm,.xml,.rtf,.docx,.xlsx,.pptx,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
      <button type="button" class="ai-attach-btn" id="aiStudioAttachBtn"><span>＋</span> Add files</button>
-     <span class="ai-studio-muted">PDF, TXT, DOCX, CSV, JSON, Markdown and text files</span>
+     <span class="ai-studio-muted">PDF, TXT, DOCX, XLSX, PPTX, CSV, JSON, Markdown and text files</span>
      <div id="aiStudioFileList" class="ai-file-list" aria-live="polite"></div>
-     <p id="aiStudioFileStatus" class="ai-studio-muted">Files are read as text and included with your prompt. Scanned PDFs may need OCR first.</p>
+     <p id="aiStudioFileStatus" class="ai-studio-muted">Drop files here or attach them. Text is extracted and sent with your prompt; scanned PDFs may need OCR first.</p>
     </div>
     <div class="ai-composer-footer">
      <label class="ai-schedule-label" for="aiStudioRunAt">Run now or schedule</label>
@@ -9860,6 +9860,7 @@ html, body { max-width:100%; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script id="ai-question-studio-client">
 (function(){
  "use strict";
@@ -9994,8 +9995,40 @@ html, body { max-width:100%; }
    const result=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
    return result.value||"";
   }
+  if(ext==="xlsx"||ext==="pptx"){
+   if(!window.JSZip)throw new Error("Office file reader could not load. Refresh the page and try again.");
+   const zip=await window.JSZip.loadAsync(await file.arrayBuffer());
+   const xmlText=async function(path){const entry=zip.file(path);return entry?await entry.async("text"):"";};
+   const parseXml=function(source){return new DOMParser().parseFromString(source,"application/xml");};
+   if(ext==="xlsx"){
+    const sharedXml=await xmlText("xl/sharedStrings.xml");
+    const shared=sharedXml?Array.from(parseXml(sharedXml).getElementsByTagName("si")).map(function(si){return Array.from(si.getElementsByTagName("t")).map(function(t){return t.textContent||"";}).join("");}):[];
+    const paths=Object.keys(zip.files).filter(function(path){return /^xl\/worksheets\/sheet\d+\.xml$/.test(path);}).sort();
+    const sheets=[];
+    for(const path of paths){
+     const doc=parseXml(await xmlText(path));
+     const rows=Array.from(doc.getElementsByTagName("row")).map(function(row){
+      return Array.from(row.getElementsByTagName("c")).map(function(cell){
+       const value=cell.getElementsByTagName("v")[0];
+       if(!value)return Array.from(cell.getElementsByTagName("t")).map(function(t){return t.textContent||"";}).join("");
+       const raw=value.textContent||"";
+       return cell.getAttribute("t")==="s"?(shared[Number(raw)]||""):raw;
+      }).join("\t");
+     });
+     sheets.push(path+"\n"+rows.join("\n"));
+    }
+    return sheets.join("\n\n");
+   }
+   const slides=Object.keys(zip.files).filter(function(path){return /^ppt\/slides\/slide\d+\.xml$/.test(path);}).sort();
+   const parts=[];
+   for(const path of slides){
+    const doc=parseXml(await xmlText(path));
+    parts.push(path+"\n"+Array.from(doc.getElementsByTagName("t")).map(function(t){return t.textContent||"";}).join(" "));
+   }
+   return parts.join("\n\n");
+  }
   if(["txt","md","csv","json","html","htm","xml","rtf"].includes(ext)||file.type.startsWith("text/"))return await file.text();
-  throw new Error("Unsupported file type: "+name+". Use PDF, TXT, DOCX, CSV, JSON, Markdown or another text file.");
+  throw new Error("Unsupported file type: "+name+". Supported: PDF, TXT, DOCX, XLSX, PPTX, CSV, JSON, Markdown, HTML, XML, RTF and text files.");
  }
  function renderAttachedFiles(){
   const target=$("aiStudioFileList");
@@ -10014,7 +10047,7 @@ html, body { max-width:100%; }
    }catch(error){$("aiStudioFileStatus").textContent=error.message;}
   }
   renderAttachedFiles();
-  if(attachedFiles.length)$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached. Their extracted text will accompany your prompt.";
+  if(attachedFiles.length)$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached. Extracted content will accompany your prompt.";
   $("aiStudioFiles").value="";
  }
  async function createTask(){
@@ -10134,6 +10167,10 @@ html, body { max-width:100%; }
  $("aiStudioCancelMemoryBtn").addEventListener("click",newMemory);
  $("aiStudioAttachBtn").addEventListener("click",function(){$("aiStudioFiles").click();});
  $("aiStudioFiles").addEventListener("change",function(e){addFiles(e.target.files);});
+ const dropArea=$("aiQuestionStudioModal").querySelector(".ai-attach-area");
+ ["dragenter","dragover"].forEach(function(type){dropArea.addEventListener(type,function(e){e.preventDefault();dropArea.classList.add("is-dragover");});});
+ ["dragleave","drop"].forEach(function(type){dropArea.addEventListener(type,function(e){e.preventDefault();dropArea.classList.remove("is-dragover");});});
+ dropArea.addEventListener("drop",function(e){addFiles(e.dataTransfer&&e.dataTransfer.files);});
  $("aiStudioPrompt").addEventListener("input",function(){$("aiPromptCharCount").textContent=this.value.length.toLocaleString()+" characters";});
  $("aiStudioFileList").addEventListener("click",function(e){const btn=e.target.closest("[data-file-remove]");if(!btn)return;attachedFiles.splice(Number(btn.dataset.fileRemove),1);renderAttachedFiles();$("aiStudioFileStatus").textContent=attachedFiles.length+" file(s) attached.";});
  $("aiStudioMemoryList").addEventListener("click",function(e){
@@ -10202,6 +10239,32 @@ html, body { max-width:100%; }
 #aiStudioMemoryStatus{font-size:.72rem;color:var(--muted);min-height:1.2em}
 @media(max-width:850px){#aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{grid-template-columns:minmax(0,1fr);padding:10px}#aiQuestionStudioModal .ai-studio-side{grid-template-columns:minmax(0,1fr)}#aiQuestionStudioModal .ai-prompt-editor{min-height:250px}}
 @media(max-width:520px){.ai-composer-heading h3{font-size:1.05rem}.ai-composer-heading p{font-size:.76rem}.ai-composer-footer{align-items:stretch}.ai-schedule-label{width:100%}#aiStudioRunAt{flex-basis:100%}.ai-create-task-btn{width:100%;justify-content:center}.ai-prompt-foot{font-size:.66rem}}
+</style>
+
+
+<style id="ai-studio-cleanup-v2">
+/* Keep the home actions available but remove the oversized dashboard card treatment. */
+#homeDashboard .home-dashboard-card{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:10px 0 14px!important;margin:0 auto!important}
+#homeDashboard .home-dashboard-symbol{width:48px;height:48px;border-radius:14px;font-size:1.45rem;margin-bottom:8px}
+#homeDashboard .home-dashboard-card h2{margin-bottom:4px}
+#homeDashboard .home-dashboard-card p{margin:0 0 10px}
+.home-ai-studio-card,.home-ai-studio-icon,.home-ai-studio-copy,.home-ai-studio-launch{display:none!important}
+#aiQuestionStudioModal .ai-studio-card{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border:0!important;border-radius:0!important}
+#aiQuestionStudioModal .ai-studio-grid{min-height:0;overflow:auto}
+#aiQuestionStudioModal .ai-prompt-editor{min-height:min(48vh,560px);font-size:1rem;letter-spacing:.01em}
+#aiQuestionStudioModal .ai-attach-area{transition:border-color .15s,background .15s}
+#aiQuestionStudioModal .ai-attach-area.is-dragover{border-color:var(--primary);background:var(--primary-soft)}
+#aiQuestionStudioModal .ai-memory-list{max-height:240px}
+#aiQuestionStudioModal .ai-memory-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#aiQuestionStudioModal .ai-memory-item-copy{min-width:0;overflow-wrap:anywhere}
+#aiQuestionStudioModal .ai-memory-item-copy p{margin:4px 0 0;white-space:pre-wrap;line-height:1.45}
+#aiQuestionStudioModal .ai-studio-side{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:12px;min-width:0}
+#aiQuestionStudioModal .ai-task-list{max-height:320px}
+@media(max-width:850px){
+ #aiQuestionStudioModal .ai-studio-grid.ai-studio-workspace{grid-template-columns:minmax(0,1fr)}
+ #aiQuestionStudioModal .ai-studio-side{grid-template-columns:minmax(0,1fr)}
+ #aiQuestionStudioModal .ai-prompt-editor{min-height:42vh}
+}
 </style>
 
 </body>
