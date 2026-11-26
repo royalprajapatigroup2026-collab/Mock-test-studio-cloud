@@ -4435,6 +4435,26 @@ body.primary-active .action-bar #nextBtn{white-space:nowrap!important;}
 }
 </style>
 
+
+<style id="statement-wise-explanation-layout-v1">
+/* Statement-wise explanation layout for On-Demand and rotation question explanations. */
+.exp-statement-block{
+ display:block; margin:12px 0 14px; padding:11px 13px;
+ border:1px solid var(--border,#d8dee9); border-left:4px solid #16a34a;
+ border-radius:10px; background:var(--panel-2,rgba(148,163,184,.07));
+}
+.exp-statement-block:first-child{margin-top:4px}
+.exp-statement-block:last-child{margin-bottom:4px}
+.exp-statement-label{
+ display:block; margin:0 0 7px; font-weight:800; font-size:.96em;
+ letter-spacing:.01em; line-height:1.4; color:#15803d;
+}
+.exp-statement-incorrect{border-left-color:#dc2626}
+.exp-statement-incorrect .exp-statement-label{color:#dc2626}
+.exp-statement-body{display:block; min-width:0}
+.exp-statement-body .exp-line{margin:0 0 5px; line-height:1.65}
+.exp-statement-body .exp-line:last-child{margin-bottom:0}
+</style>
 </head>
 <body>
 
@@ -5198,10 +5218,35 @@ function renderStemHTML(stem){
 }
 
 function renderExplanationHTML(exp){
- const lines = String(exp || "").split("\n").filter(l => l.trim() !== "");
- return lines.map(line => {
-  const isBullet = /^(?:•\s+|-\s+|\d+\.\s+)/.test(line);
-  const cls = isBullet ? "exp-line exp-bullet" : "exp-line";
+ const source=String(exp||"").trim();
+ if(!source)return "";
+ // Split long MCQ explanations into independent statement blocks when the source
+ // explicitly labels a statement as correct/incorrect. Keep all original wording.
+ const statementParts=source.split(/(?=(?:Statement|Stmt\\.)\\s*\\d+\\s+is\\s+(?:correct|incorrect)\\s*[:.])/i);
+ const hasStatementBlocks=statementParts.length>1 || /^(?:Statement|Stmt\\.)\\s*\\d+\\s+is\\s+(?:correct|incorrect)\\s*[:.]/i.test(source);
+ if(hasStatementBlocks){
+  return statementParts.filter(part=>part.trim()).map(part=>{
+   const match=part.trim().match(/^((?:Statement|Stmt\\.)\\s*\\d+)\\s+is\\s+(correct|incorrect)\\s*[:.]?\\s*/i);
+   if(!match){
+    return `<div class="exp-line">${formatInline(part.trim())}</div>`;
+   }
+   const status=match[2].toLowerCase();
+   const body=part.trim().slice(match[0].length).trim();
+   const lines=body.split("\\n").filter(line=>line.trim());
+   const bodyHTML=lines.map(line=>{
+    const isBullet=/^(?:•\\s+|-\\s+|\\d+\\.\\s+)/.test(line);
+    return `<div class="exp-line${isBullet?" exp-bullet":""}">${formatInline(line)}</div>`;
+   }).join("");
+   return `<section class="exp-statement-block exp-statement-${status}">
+    <div class="exp-statement-label">${esc(match[1])} — ${status.toUpperCase()}</div>
+    <div class="exp-statement-body">${bodyHTML}</div>
+   </section>`;
+  }).join("");
+ }
+ const lines=source.split("\\n").filter(line=>line.trim()!=="");
+ return lines.map(line=>{
+  const isBullet=/^(?:•\\s+|-\\s+|\\d+\\.\\s+)/.test(line);
+  const cls=isBullet?"exp-line exp-bullet":"exp-line";
   return `<div class="${cls}">${formatInline(line)}</div>`;
  }).join("");
 }
