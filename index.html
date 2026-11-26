@@ -6183,24 +6183,21 @@ function renderSavedAttemptReview(item){
  // The attempt title/date line was removed from the visible review layout.
  // Avoid referencing the removed historyReviewAttemptTitle element.
 
- $("historyReviewSummary").innerHTML=`
-  <div class="history-review-stat"><strong>${Number(item.correct)||0}</strong><span>Correct</span></div>
-  <div class="history-review-stat"><strong>${Number(item.wrong)||0}</strong><span>Incorrect</span></div>
-  <div class="history-review-stat"><strong>${Number(item.skipped)||0}</strong><span>Skipped</span></div>
-  <div class="history-review-stat"><strong>${Number(item.scorePercent)||0}%</strong><span>Score</span></div>`;
+ $("historyReviewSummary").innerHTML="";
  const isAttempted=q=>!!q.selected;
  const isUnattempted=q=>!q.selected&&q.visited===false;
  const isSkipped=q=>!q.selected&&q.visited===true;
  const isUnclassified=q=>!q.selected&&typeof q.visited!=="boolean";
  const filters=[
   ["all","All",questions.length],
+  ["correct","Correct",questions.filter(q=>q.status==="correct").length],
+  ["wrong","Incorrect",questions.filter(q=>q.status==="wrong").length],
   ["skipped","Skipped",questions.filter(isSkipped).length],
   ["marked","Mark for Review",questions.filter(q=>!!q.marked).length],
-  ["correct","Correct",questions.filter(q=>q.status==="correct").length],
-  ["wrong","Incorrect",questions.filter(q=>q.status==="wrong").length]
+  ["bookmarked","Bookmarked",questions.filter(isBookmarked).length]
  ];
  $("historyReviewFilters").innerHTML=
-  filters.map(([key,label,count])=>`<button type="button" class="history-filter-chip ${activeHistoryFilter===key?"active":""}" data-history-filter="${key}" aria-pressed="${activeHistoryFilter===key}">${label}<span>${count}</span></button>`).join("");
+  filters.map(([key,label,count])=>`<button type="button" class="history-filter-chip ${activeHistoryFilter===key?"active":""}" data-history-filter="${key}" aria-pressed="${activeHistoryFilter===key}" ${count===0?"disabled":""}>${label}<span>${count}</span></button>`).join("");
  let filtered=questions.map((d,idx)=>({d,idx})).filter(({d})=>{
   if(activeHistoryFilter==="attempted")return isAttempted(d);
   if(activeHistoryFilter==="unattempted")return isUnattempted(d);
@@ -10829,61 +10826,21 @@ body.page-workspace-open #bookmarkPracticePage{
 </style>
 
 
-<style id="saved-review-status-colors-v1">
-/* Saved Test Results: semantic colors for summary statistics. */
-#resultHistoryModal .history-review-summary .history-review-stat{
- border:1px solid var(--border)!important;background:var(--surface)!important;
- border-radius:12px!important;overflow:hidden!important;
-}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(1){
- background:#e8f7ef!important;border-color:#86d5a8!important;
-}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(1) strong{color:#087b43!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(1) span{color:#176b43!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(2){
- background:#fff0f0!important;border-color:#f3aaaa!important;
-}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(2) strong{color:#c62828!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(2) span{color:#a61f1f!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(3){
- background:#fff5df!important;border-color:#f0cd79!important;
-}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(3) strong{color:#a65b00!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(3) span{color:#87500b!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(4){
- background:#edf1ff!important;border-color:#b8c4ff!important;
-}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(4) strong{color:#3949ab!important}
-#resultHistoryModal .history-review-summary .history-review-stat:nth-child(4) span{color:#34449b!important}
-
-/* Remaining question filters: neutral All, amber Skipped, violet Mark for Review,
-   green Correct and red Incorrect. */
-#resultHistoryModal .history-review-filters .history-filter-chip{
- border-width:1px!important;font-weight:850!important;transition:filter .15s ease!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="all"]{
- background:#eef1f5!important;border-color:#cbd2dc!important;color:#344054!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="skipped"]{
- background:#fff4df!important;border-color:#efc66d!important;color:#925500!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="marked"]{
- background:#f3eaff!important;border-color:#c9a5f5!important;color:#7135a8!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="correct"]{
- background:#e6f7ed!important;border-color:#83d3a2!important;color:#087b43!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="wrong"]{
- background:#ffeded!important;border-color:#f0a0a0!important;color:#b42323!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip span{
- background:rgba(255,255,255,.78)!important;color:inherit!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip.active{
- box-shadow:0 0 0 2px currentColor inset,0 2px 8px rgba(0,0,0,.08)!important;
- filter:saturate(1.12)!important;
-}
-#resultHistoryModal .history-review-filters .history-filter-chip:hover{filter:brightness(.97)!important}
+<style id="saved-review-status-colors-v2">
+/* Saved Test Results: show only the six compact filters; summary cards removed. */
+#resultHistoryModal .history-review-summary{display:none!important}
+#resultHistoryModal .history-review-filters{display:flex!important;flex-wrap:wrap!important;gap:7px!important;margin:10px 0 14px!important;padding:8px 0!important}
+#resultHistoryModal .history-review-filters .history-filter-chip{border-width:1px!important;font-weight:850!important;transition:filter .15s ease!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="all"]{background:#eef1f5!important;border-color:#cbd2dc!important;color:#344054!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="correct"]{background:#e6f7ed!important;border-color:#83d3a2!important;color:#087b43!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="wrong"]{background:#ffeded!important;border-color:#f0a0a0!important;color:#b42323!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="skipped"]{background:#fff4df!important;border-color:#efc66d!important;color:#925500!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="marked"]{background:#f3eaff!important;border-color:#c9a5f5!important;color:#7135a8!important}
+#resultHistoryModal .history-review-filters .history-filter-chip[data-history-filter="bookmarked"]{background:#e5f4ff!important;border-color:#91c9ef!important;color:#075985!important}
+#resultHistoryModal .history-review-filters .history-filter-chip span{background:rgba(255,255,255,.8)!important;color:inherit!important}
+#resultHistoryModal .history-review-filters .history-filter-chip.active{box-shadow:0 0 0 2px currentColor inset,0 2px 8px rgba(0,0,0,.08)!important;filter:saturate(1.12)!important}
+#resultHistoryModal .history-review-filters .history-filter-chip:hover:not(:disabled){filter:brightness(.97)!important}
+#resultHistoryModal .history-review-filters .history-filter-chip:disabled{opacity:.42!important;filter:grayscale(.35)!important;cursor:not-allowed!important;pointer-events:none!important}
 </style>
 
 </body>
