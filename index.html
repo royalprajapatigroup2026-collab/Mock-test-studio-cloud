@@ -6278,7 +6278,7 @@ function renderSavedAttemptReview(item){
    </div>
    <div class="history-review-single-nav saved-review-question-nav action-bar review-action-bar">
     <button type="button" class="act-btn" data-history-review-nav="prev" aria-label="Previous question" ${activeHistoryReviewPosition===0?"disabled":""}>← Previous</button>
-    <span class="review-progress" aria-live="polite">Question ${activeHistoryReviewPosition+1} of ${filtered.length}</span>
+    <span class="review-progress" aria-live="polite">${activeHistoryReviewPosition+1} out of ${filtered.length} Questions</span>
     <button type="button" class="act-btn next-btn" data-history-review-nav="next" aria-label="Next question" ${activeHistoryReviewPosition===filtered.length-1?"disabled":""}>Next →</button>
    </div>
   </article>`;
@@ -7375,7 +7375,7 @@ function renderBookmarkPracticePage(){
   </div>
   <div class="bookmark-practice-actions bookmark-practice-controls action-bar review-action-bar">
    <button type="button" class="act-btn" data-bookmark-nav="prev" aria-label="Previous question" ${bookmarkPracticeIndex===0?"disabled":""}>← Previous</button>
-   <span class="review-progress" aria-live="polite">Question ${bookmarkPracticeIndex+1} of ${items.length}</span>
+   <span class="review-progress" aria-live="polite">${bookmarkPracticeIndex+1} out of ${items.length} Questions</span>
    <button type="button" class="act-btn next-btn" data-bookmark-nav="next" aria-label="Next question" ${bookmarkPracticeIndex===items.length-1?"disabled":""}>Next →</button>
   </div>
  </article>`;
