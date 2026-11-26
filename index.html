@@ -10194,6 +10194,7 @@ html, body { max-width:100%; }
  }
  let studioMode="task";
  let activeReviewTaskId="";
+ let activeReviewTarget=null;
  let conversationId=localStorage.getItem("mts_ai_studio_conversation")||"";
  function setStudioMode(mode){
   studioMode=mode;
@@ -10214,6 +10215,7 @@ html, body { max-width:100%; }
    const data=await request("get_task",{id:id}),task=data.task||{};
    if(!Array.isArray(task.generated_questions)||!task.generated_questions.length)throw new Error("Questions are not ready yet.");
    activeReviewTaskId=id;
+   activeReviewTarget={targetSubject:String((task.settings||{}).targetSubject||""),targetChapterId:String((task.settings||{}).targetChapterId||""),targetChapterTitle:String((task.settings||{}).targetChapterTitle||"")};
    $("aiStudioReviewTitle").textContent=task.title+" · "+task.generated_questions.length+" · "+String((task.settings||{}).targetSubject||"")+" / "+String((task.settings||{}).targetChapterTitle||"");
    $("aiStudioReviewList").innerHTML=task.generated_questions.map(function(q,i){
     const opts=Array.isArray(q.options)?q.options:[];
@@ -10226,13 +10228,13 @@ html, body { max-width:100%; }
  }
  async function approveReview(){
   if(!activeReviewTaskId)return;
-  const target=currentTarget();
-  if(!target.targetSubject||!target.targetChapterId){status("Select the destination subject and chapter in the main app first.","error");return;}
+  const target=activeReviewTarget||currentTarget();
+  if(!target.targetSubject||!target.targetChapterId){status("Select the destination subject and chapter in the main app first, then regenerate the questions.","error");return;}
   try{
    $("aiStudioApproveBtn").disabled=true;
    await request("approve_task",{id:activeReviewTaskId});
    $("aiStudioReviewPanel").hidden=true;
-   activeReviewTaskId="";
+   activeReviewTaskId="";activeReviewTarget=null;
    status("Approved and added to "+target.targetSubject+" · "+target.targetChapterTitle+".","success");
    await loadTasks();
    await refreshPublishedTests();
@@ -10272,6 +10274,7 @@ html, body { max-width:100%; }
   input.value=message;
   appendChat("user",message);input.value="";
   const target=currentTarget(),intent=parseQuestionRequest(message,target);
+  if(intent.subject&&target.targetSubject&&intent.subject.toLowerCase()!==target.targetSubject.toLowerCase()){appendChat("model","Please select the "+intent.subject+" subject and the required chapter in the main app first. I have not generated or routed questions to a different subject.");return;}
   try{
    const data=await request("chat",{message:message,conversation_id:conversationId,generate_questions:intent.generate,requested_count:intent.count,generation_mode:intent.mode,title:intent.title,targetSubject:intent.subject||target.targetSubject,targetChapterId:target.targetChapterId,targetChapterTitle:target.targetChapterTitle,sourceText:attachedFiles.map(f=>"\n\n"+f.name+"\n"+f.text).join("")});
    if(data.conversation&&data.conversation.id){conversationId=data.conversation.id;localStorage.setItem("mts_ai_studio_conversation",conversationId);await loadConversations();}
